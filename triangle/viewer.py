@@ -74,10 +74,10 @@ def main():
     # patch = cylinder.TexturedCylinder("./patch/textured/phong_texture.vert", "./patch/textured/phong_texture.frag").setup()
 
     # Triangles
-    #model = Triangle("./gouraud.vert", "./gouraud.frag").setup()
+    model = Triangle("./gouraud.vert", "./gouraud.frag").setup()
     #model = Triangle("./phong.vert", "./phong.frag").setup()
 
-    model = TriangleEx("./phong.vert", "./phong.frag").setup()
+    #model = TriangleEx("./phong.vert", "./phong.frag").setup()
 
     viewer.add(model)
 

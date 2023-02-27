@@ -21,9 +21,9 @@ class Triangle:
         self.normals = normals / np.linalg.norm(normals, axis=1, keepdims=True)
 
         self.colors = np.array([
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0]
+            [1.0, 0.5, 0.0],
+            [0.5, 1.0, 0.0],
+            [0.0, 0.5, 1.0]
         ], dtype=np.float32)
 
         self.vao = VAO()
@@ -101,7 +101,6 @@ class TriangleEx:
 
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
-        #
 
     def setup(self):
         stride = 9*4
