@@ -1,9 +1,14 @@
-from kstn2021.libs.shader import *
-from kstn2021.libs import transform as T
-from kstn2021.libs.buffer import *
+import sys
+sys.path.append("../libs")
+
+from shader import *
+import transform as T
+from buffer import *
 import ctypes
 import glfw
 
+import OpenGL.GL as GL              # standard Python OpenGL wrapper
+import numpy as np
 
 """
 TOP (y =+1): EFGH
@@ -59,12 +64,10 @@ Texture (2D image: 3x4, see: shape/texcube/image/texture.jpeg
 
 class TexCube(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices = np.array(
-            [
+        self.vertices = np.array([
                 # YOUR CODE HERE to specify vertices' coordinates
-            ],
-            dtype=np.float32
-        )
+                
+            ], dtype=np.float32)
 
         # concatenate three sequences of triangle strip: [0 - 9] [10 - 13] [14-17]
         # => repeat 9, 10, 13, 14
@@ -75,19 +78,15 @@ class TexCube(object):
         self.normals = # YOUR CODE HERE to compute vertices' normals using the coordinates
 
         # texture coordinates
-        self.texcoords = np.array(
-            [
+        self.texcoords = np.array([
                 # YOUR CODE HERE to specify vertices' texture coordinates
-            ],
-            dtype=np.float32
-        )
+                
+            ], dtype=np.float32)
 
-        self.colors = np.array(
-            [
+        self.colors = np.array([
                 # YOUR CODE HERE to specify vertices' color
-            ],
-            dtype=np.float32
-        )
+                
+            ], dtype=np.float32)
 
         self.vao = VAO()
 
