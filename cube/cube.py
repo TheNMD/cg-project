@@ -12,20 +12,42 @@ import numpy as np
 
 class Cube(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices = np.array(
-            # YOUR CODE HERE to specify vertex's coordinates
-        )
+        self.vertices = np.array([
+            [+1, +1, +1],
+            [+1, +1, -1],
+            [+1, -1, +1],
+            [+1, -1, -1],
+            [-1, +1, +1],
+            [-1, +1, -1],
+            [-1, -1, +1],
+            [-1, -1, -1]], dtype=np.float32)
 
-        self.indices = np.array(
-            # YOUR CODE HERE to specify index data
-        )
+        self.indices = np.array([
+            0,2,3, 
+            0,1,3,  
+            0,4,6, 
+            0,2,6,  
+            0,1,5, 
+            0,4,5,
+            7,5,4, 
+            7,6,4,  
+            7,6,2, 
+            7,3,2,  
+            7,5,1, 
+            7,3,1],  dtype=np.uint32)
 
-        self.normals = # YOUR CODE HERE to compute vertex's normal using the coordinates
+        # self.normals = # YOUR CODE HERE to compute vertex's normal using the coordinates
 
         # colors: RGB format
-        self.colors = np.array(
-            # YOUR CODE HERE to specify vertex's color
-        )
+        self.colors = np.array([
+            [0, 1, 1, 1], 
+            [0, 0, 1, 1], 
+            [0, 0, 0, 1], 
+            [0, 1, 0, 1],
+            [1, 1, 0, 1], 
+            [1, 1, 1, 1], 
+            [1, 0, 1, 1], 
+            [1, 0, 0, 1]],  dtype=np.float32)
 
         self.vao = VAO()
 
