@@ -1,9 +1,14 @@
-from kstn2021.libs.shader import *
-from kstn2021.libs import transform as T
-from kstn2021.libs.buffer import *
+import sys
+sys.path.append("../libs")
+
+from shader import *
+import transform as T
+from buffer import *
 import ctypes
 import glfw
 
+import OpenGL.GL as GL              # standard Python OpenGL wrapper
+import numpy as np
 
 class Cube(object):
     def __init__(self, vert_shader, frag_shader):
