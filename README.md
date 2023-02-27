@@ -1,7 +1,7 @@
 ltsach@hcmut.edu.vn
 
-pip install PyOpenGL
-pip install opencv-python
-pip install glfw
-pip install pandas
-pip install numpy
+1. pip install PyOpenGL
+2. pip install opencv-python
+3. pip install glfw
+4. pip install pandas
+5. pip install numpy
