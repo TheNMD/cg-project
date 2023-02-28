@@ -65,8 +65,14 @@ Texture (2D image: 3x4, see: shape/texcube/image/texture.jpeg
 class TexCube(object):
     def __init__(self, vert_shader, frag_shader):
         self.vertices = np.array([
-                # YOUR CODE HERE to specify vertices' coordinates
-                
+                [+1, +1, +1],
+                [+1, +1, -1],
+                [+1, -1, +1],
+                [+1, -1, -1],
+                [-1, +1, +1],
+                [-1, +1, -1],
+                [-1, -1, +1],
+                [-1, -1, -1]
             ], dtype=np.float32)
 
         # concatenate three sequences of triangle strip: [0 - 9] [10 - 13] [14-17]
@@ -83,10 +89,10 @@ class TexCube(object):
                 
             ], dtype=np.float32)
 
-        self.colors = np.array([
-                # YOUR CODE HERE to specify vertices' color
+        # self.colors = np.array([
+        #         # YOUR CODE HERE to specify vertices' color
                 
-            ], dtype=np.float32)
+        #     ], dtype=np.float32)
 
         self.vao = VAO()
 
