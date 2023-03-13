@@ -13,29 +13,18 @@ import numpy as np
 class Cube(object):
     def __init__(self, vert_shader, frag_shader):
         self.vertices = np.array([
-                [+1, +1, +1],
-                [+1, +1, -1],
-                [+1, -1, +1],
-                [+1, -1, -1],
-                [-1, +1, +1],
-                [-1, +1, -1],
-                [-1, -1, +1],
-                [-1, -1, -1]
+                [+1, +1, +1], # A 0
+                [+1, +1, -1], # B 1
+                [+1, -1, +1], # C 2
+                [+1, -1, -1], # D 3
+                [-1, +1, +1], # E 4
+                [-1, +1, -1], # F 5
+                [-1, -1, +1], # G 6
+                [-1, -1, -1]  # H 7
             ], dtype=np.float32)
 
         self.indices = np.array([
-                0, 3, 2, 
-                0, 1, 3,  
-                0, 4, 6, 
-                0, 2, 6,  
-                0, 1, 5, 
-                0, 4, 5,
-                7, 5, 4, 
-                7, 6, 4,  
-                7, 6, 2, 
-                7, 3, 2,  
-                7, 5, 1, 
-                7, 3, 1
+                2, 3, 6, 7, 5, 3, 1, 2, 0, 6, 4, 5, 0, 1
             ],  dtype=np.uint32)
 
         # self.normals = # YOUR CODE HERE to compute vertex's normal using the coordinates
