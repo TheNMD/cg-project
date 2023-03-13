@@ -24,7 +24,7 @@ class Cube(object):
             ], dtype=np.float32)
 
         self.indices = np.array([
-                0, 2, 3, 
+                0, 3, 2, 
                 0, 1, 3,  
                 0, 4, 6, 
                 0, 2, 6,  
