@@ -1,15 +1,15 @@
 import sys
 sys.path.append("../libs")
 
-import ctypes
-import glfw
-import sys
-import numpy as np
-from os.path import dirname, join, abspath
-sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from shader import *
 import transform as T
 from buffer import *
+import ctypes
+import glfw
+
+import OpenGL.GL as GL              # standard Python OpenGL wrapper
+import numpy as np
+
 
 class Pyramid(object):
     def __init__(self, vert_shader, frag_shader):
