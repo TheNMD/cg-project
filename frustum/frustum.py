@@ -10,13 +10,16 @@ import glfw
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np
 
-def cylinder(r, h, s):
+def frustum(r, h1, h2, s):
     vertices, indices, color = [], [], []
+    ratio = h2 / h1
     for i in range(s):
         theta = 2 * np.pi * i / s
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        vertices += [[x, y, -h / 2], [x, y, h / 2]]
+        x1 = x * ratio
+        y1 = y * ratio
+        vertices += [[x, y, -h1 / 2], [x1, y1, -h1 / 2 + h1 * ratio]]
         color += [1, 0, 0] + [0, 0, 1]
 
     # Side
@@ -25,7 +28,7 @@ def cylinder(r, h, s):
     indices += [0] + [1] + [0]
     
     # Bottom
-    vertices += [[0, 0, -h / 2]]
+    vertices += [[0, 0, -h1 / 2]]
     for i in range(len(vertices) - 1):
         if(i % 2 == 0):
             indices += [i] + [len(vertices) - 1]        
@@ -35,7 +38,7 @@ def cylinder(r, h, s):
     indices += [0] + [0] + [1]
     
     # Top
-    vertices += [[0, 0, h / 2]]
+    vertices += [[0, 0,  -h1 / 2 + h1 * ratio]]
     for i in range(len(vertices) - 1):
         if(i % 2 != 0):
             indices += [i] + [len(vertices) - 1]
@@ -49,9 +52,9 @@ def cylinder(r, h, s):
     
     return vertices, indices, color
 
-class Cylinder(object):
+class Frustum(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = cylinder(1, 2, 50) # radius, height, side
+        self.vertices, self.indices, self.colors = frustum(1, 2, 1, 4) # radius, height 1, height 2, side
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         
