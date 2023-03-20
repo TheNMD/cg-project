@@ -20,7 +20,7 @@ class Tetrahedron(object):
             ], dtype = np.float32)
 
         self.indices = np.array([
-                3, 0, 2, 1, 3, 0
+                1, 2, 0, 3, 1, 2
             ], dtype = np.uint32)
 
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates

@@ -14,14 +14,14 @@ class Pyramid(object):
     def __init__(self, vert_shader, frag_shader):
         self.vertices = np.array([
                 [0.0, 1.0, 0.0],    # O 0
-                [-1.5, -1.0, -1.5], # A 1
-                [1.5, -1.0, -1.5],  # B 2
-                [1.5, -1.0, 1.5],   # C 3
-                [-1.5, -1.0, 1.5]   # D 4
+                [-1.5, -1.0, -1.5], # D 1
+                [1.5, -1.0, -1.5],  # C 2
+                [1.5, -1.0, 1.5],   # B 3
+                [-1.5, -1.0, 1.5]   # A 4
             ], dtype = np.float32)
 
         self.indices = np.array([
-                3, 0, 4, 1, 3, 2, 0, 1
+                1, 0, 2, 3, 1, 4, 0 ,3
             ], dtype = np.uint32)
 
         # self.normals = # YOUR CODE HERE to compute vertex's normal using the coordinates
