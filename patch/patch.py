@@ -1,15 +1,14 @@
-import OpenGL.GL as GL              # standard Python OpenGL wrapper
-import numpy as np
-import pandas as pd
+import sys
+sys.path.append("../libs")
 
-from kstn2021.libs.shader import *
-from kstn2021.libs import transform as T
-from kstn2021.libs.buffer import *
+from shader import *
+import transform as T
+from buffer import *
 import ctypes
+import glfw
 
-
-
-
+import OpenGL.GL as GL
+import numpy as np
 class Patch(object):
     def __init__(self, vert_shader1, frag_shader1, vert_shader2, frag_shader2,):
         """

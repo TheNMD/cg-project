@@ -7,7 +7,7 @@ from buffer import *
 import ctypes
 import glfw
 
-import OpenGL.GL as GL              # standard Python OpenGL wrapper
+import OpenGL.GL as GL
 import numpy as np
 
 def cone(r, h, s):

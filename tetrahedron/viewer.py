@@ -1,15 +1,11 @@
+import sys
+sys.path.append("../libs")
+
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-
-import os, sys 
-from os.path import dirname, join, abspath
-
-sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-sys.path.insert(0, abspath(join(dirname(__file__), '.')))
-
-from libs.transform import Trackball
+from transform import Trackball
 from tetrahedron import *
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
