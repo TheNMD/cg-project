@@ -1,14 +1,8 @@
-import sys
-sys.path.append("../libs")
-sys.path.append("./textured")
-
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
-from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
-from patch import *
-from TexturedPatch import *
+from triangle import *
+
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
@@ -76,13 +70,14 @@ def main():
     """ create windows, add shaders & scene objects, then run rendering loop """
     viewer = Viewer()
 
-    model = Patch("./gouraud.vert", "./gouraud.frag",
-                  "./phong.vert", "./phong.frag").setup()
 
-    model = PatchEx("./phongex.vert", "./phongex.frag").setup()
+    # patch = cylinder.TexturedCylinder("./patch/textured/phong_texture.vert", "./patch/textured/phong_texture.frag").setup()
 
+    # Triangles
+    #model = Triangle("./gouraud.vert", "./gouraud.frag").setup()
+    #model = Triangle("./phong.vert", "./phong.frag").setup()
 
-    model = TexturedPatch("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    model = TriangleEx("./phong.vert", "./phong.frag").setup()
 
     viewer.add(model)
 

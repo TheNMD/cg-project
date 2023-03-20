@@ -1,14 +1,14 @@
-import sys
-sys.path.append("../libs")
-sys.path.append("./textured")
-
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
-from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+
+import os, sys 
+from os.path import dirname, join, abspath
+
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+sys.path.insert(0, abspath(join(dirname(__file__), '.')))
 from patch import *
-from TexturedPatch import *
+from textured.TexturedPatch import *
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:

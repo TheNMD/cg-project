@@ -1,14 +1,9 @@
-import sys
-sys.path.append("../../libs")
-
-from shader import *
-import transform as T
-from buffer import *
+from libs.shader import *
+from libs import transform as T
+from libs.buffer import *
 import ctypes
+import cv2
 import glfw
-
-import OpenGL.GL as GL
-import numpy as np
 
 class TexturedPatch(object):
     def __init__(self, vert_shader, frag_shader):
