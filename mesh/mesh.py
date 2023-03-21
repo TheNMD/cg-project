@@ -10,16 +10,18 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere(r, s1, s2):
+def mesh():
+    def yFunc(x, z):
+        return x**2 + z**2
+    
     vertices, indices, color = [], [], []
-    for i in range(s1 + 1):
-        phi = np.pi / 2 - np.pi * i / s1
-        for j in range(s2 + 1):
-            theta = 2 * np.pi * j / s2
-            x = r * np.cos(phi) * np.cos(theta)
-            y = r * np.cos(phi) * np.sin(theta)
-            z = r * np.sin(phi)
-            vertices += [[x, y, z]]
+    
+    xList = np.arange(-1, 1, 0.5)
+    zList = np.arange(-1, 1, 0.5)
+    for i in range(len(xList)):
+        for j in range(len(zList)):
+            y = yFunc(xList[i], zList[j])
+            vertices += [[xList[i], y, zList[j]]]
             if i % 2 == 0 and j % 2 == 0:
                 color += [1, 0, 0]
             elif i % 2 == 0 and j % 2 != 0:
@@ -28,15 +30,14 @@ def sphere(r, s1, s2):
                 color += [0, 1, 1]
             elif i % 2 != 0 and j % 2 != 0:
                 color += [0, 0, 1]
-
+    
+    s1 = len(xList) - 1
+    s2 = len(zList) - 1
     for i in range(s1):
         k1 = i * (s2 + 1)
         k2 = k1 + s2 + 1
         for j in range(s2):
-            if i != 0:
-                indices += [k1, k2, k1 + 1]
-            if i != (s1 - 1):
-                indices += [k1 + 1, k2, k2 + 1]
+            indices += [k1, k2, k1 + 1, k2, k2 + 1]
             k1 += 1
             k2 += 1
 
@@ -46,9 +47,9 @@ def sphere(r, s1, s2):
     
     return vertices, indices, color
 
-class Sphere(object):
+class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = sphere(1, 50, 50) # radius, stack, sector
+        self.vertices, self.indices, self.colors = mesh() # radius, height, side
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         
