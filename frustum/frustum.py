@@ -10,11 +10,12 @@ import glfw
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np
 
-def frustum(r, h1, h2, s):
+def frustum(r, h1, h2, side):
     vertices, indices, color = [], [], []
     ratio = h2 / h1
-    for i in range(s):
-        theta = 2 * np.pi * i / s
+    
+    for i in range(side):
+        theta = 2 * np.pi * i / side
         x = r * np.cos(theta)
         y = r * np.sin(theta)
         x1 = x * ratio

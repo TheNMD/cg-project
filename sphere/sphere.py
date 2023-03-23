@@ -10,12 +10,12 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere(r, s1, s2):
+def sphere(r, stk, sec):
     vertices, indices, color = [], [], []
-    for i in range(s1 + 1):
-        phi = np.pi / 2 - np.pi * i / s1
-        for j in range(s2 + 1):
-            theta = 2 * np.pi * j / s2
+    for i in range(stk + 1):
+        phi = np.pi / 2 - np.pi * i / stk
+        for j in range(sec + 1):
+            theta = 2 * np.pi * j / sec
             x = r * np.cos(phi) * np.cos(theta)
             y = r * np.cos(phi) * np.sin(theta)
             z = r * np.sin(phi)
@@ -29,13 +29,13 @@ def sphere(r, s1, s2):
             elif i % 2 != 0 and j % 2 != 0:
                 color += [1, 0, 0]
 
-    for i in range(s1):
-        k1 = i * (s2 + 1)
-        k2 = k1 + s2 + 1
-        for j in range(s2):
+    for i in range(stk):
+        k1 = i * (sec + 1)
+        k2 = k1 + sec + 1
+        for j in range(sec):
             if i != 0:
                 indices += [k1, k2, k1 + 1]
-            if i != (s1 - 1):
+            if i != (stk - 1):
                 indices += [k1 + 1, k2, k2 + 1]
             k1 += 1
             k2 += 1
@@ -48,7 +48,7 @@ def sphere(r, s1, s2):
 
 class Sphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = sphere(1, 100, 100) # radius, stack, sector
+        self.vertices, self.indices, self.colors = sphere(1, 100, 100) # radius, stacks, sectors
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         

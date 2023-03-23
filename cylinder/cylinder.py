@@ -10,10 +10,11 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def cylinder(r, h, s):
+def cylinder(r, h, side):
     vertices, indices, color = [], [], []
-    for i in range(s):
-        theta = 2 * np.pi * i / s
+    
+    for i in range(side):
+        theta = 2 * np.pi * i / side
         x = r * np.cos(theta)
         y = r * np.sin(theta)
         vertices += [[x, y, 0], [x, y, h]]
