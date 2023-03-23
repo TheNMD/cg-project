@@ -12,7 +12,7 @@ import numpy as np
 
 def mesh(xFirst, xLast, zFirst, zLast):
     def randFunc(x, y):
-        res = ((x**2-1)+(y**2-4)+(x**2-1)*(y**2-4)) / (x**2+y**2+1)**2
+        res = np.sqrt(x**2 + y**2)
         return res
     
     vertices, indices, color = [], [], []
@@ -25,14 +25,19 @@ def mesh(xFirst, xLast, zFirst, zLast):
             z = zList[j]
             y = randFunc(x, z)
             vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
+            # if i % 2 == 0 and j % 2 == 0:
+            #     color += [1, 0, 0]
+            # elif i % 2 == 0 and j % 2 != 0:
+            #     color += [0, 0, 1]
+            # elif i % 2 != 0 and j % 2 == 0:
+            #     color += [0, 0, 1]
+            # elif i % 2 != 0 and j % 2 != 0:
+            #     color += [1, 0, 0]
+    
+    yMax = max(np.amax(vertices, axis=1))
+    for i in range(len(vertices)):
+        yColor = vertices[i][1] / yMax
+        color += [yColor, 0, 1 - yColor]
     
     s1 = len(xList) - 1
     s2 = len(zList) - 1
