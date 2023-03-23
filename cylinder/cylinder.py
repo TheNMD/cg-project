@@ -16,7 +16,7 @@ def cylinder(r, h, s):
         theta = 2 * np.pi * i / s
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        vertices += [[x, y, -h / 2], [x, y, h / 2]]
+        vertices += [[x, y, 0], [x, y, h]]
         color += [1, 0, 0] + [0, 0, 1]
 
     # Side
@@ -25,7 +25,7 @@ def cylinder(r, h, s):
     indices += [0] + [1] + [0]
     
     # Bottom
-    vertices += [[0, 0, -h / 2]]
+    vertices += [[0, 0, 0]]
     for i in range(len(vertices) - 1):
         if(i % 2 == 0):
             indices += [i] + [len(vertices) - 1]        
@@ -35,7 +35,7 @@ def cylinder(r, h, s):
     indices += [0] + [0] + [1]
     
     # Top
-    vertices += [[0, 0, h / 2]]
+    vertices += [[0, 0, h]]
     for i in range(len(vertices) - 1):
         if(i % 2 != 0):
             indices += [i] + [len(vertices) - 1]

@@ -16,10 +16,10 @@ def cone(r, h, s):
         theta = 2 * np.pi * i / s
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        vertices += [[x, y, -h / 2]]
+        vertices += [[x, y, 0]]
         color += [1, 0, 0]
         
-    vertices += [[0, 0, h / 2]]
+    vertices += [[0, 0, h]]
     
     # Side
     for i in range(len(vertices) - 1):
@@ -30,7 +30,7 @@ def cone(r, h, s):
     indices += [0] + [0]
     
     # Bottom
-    vertices += [[0, 0, -h / 2]]
+    vertices += [[0, 0, 0]]
     for i in range(len(vertices) - 2):
         indices += [i] + [len(vertices) - 1]        
     indices += [0] + [len(vertices) - 1]

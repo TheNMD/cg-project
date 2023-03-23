@@ -23,11 +23,11 @@ def ellipsoid(rx, ry, rz, s1, s2):
             if i % 2 == 0 and j % 2 == 0:
                 color += [1, 0, 0]
             elif i % 2 == 0 and j % 2 != 0:
-                color += [1, 1, 0]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 1, 1]
-            elif i % 2 != 0 and j % 2 != 0:
                 color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
 
     for i in range(s1):
         k1 = i * (s2 + 1)
@@ -40,7 +40,6 @@ def ellipsoid(rx, ry, rz, s1, s2):
             k1 += 1
             k2 += 1
 
-    
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
@@ -49,7 +48,7 @@ def ellipsoid(rx, ry, rz, s1, s2):
 
 class Ellipsoid(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = ellipsoid(2, 4, 1, 50, 50) # x_radius, y_radius, z_radius, stack, sector
+        self.vertices, self.indices, self.colors = ellipsoid(1, 2, 3, 50, 50) # x_radius, y_radius, z_radius, stack, sector
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         

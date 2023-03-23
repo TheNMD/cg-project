@@ -12,12 +12,13 @@ import numpy as np
 
 def mesh():
     def yFunc(x, z):
-        return x**2 + z**2
+        res = np.sqrt(x**2 + z**2)
+        return np.sin(res) / res
     
     vertices, indices, color = [], [], []
     
-    xList = np.arange(-1, 1, 0.5)
-    zList = np.arange(-1, 1, 0.5)
+    xList = np.arange(-10, 10 + 0.1, 0.1)
+    zList = np.arange(-10, 10 + 0.1, 0.1)
     for i in range(len(xList)):
         for j in range(len(zList)):
             y = yFunc(xList[i], zList[j])
@@ -25,21 +26,33 @@ def mesh():
             if i % 2 == 0 and j % 2 == 0:
                 color += [1, 0, 0]
             elif i % 2 == 0 and j % 2 != 0:
-                color += [1, 1, 0]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 1, 1]
-            elif i % 2 != 0 and j % 2 != 0:
                 color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
     
     s1 = len(xList) - 1
     s2 = len(zList) - 1
-    for i in range(s1):
+    
+    for i in range(0, s1, 2):
         k1 = i * (s2 + 1)
         k2 = k1 + s2 + 1
         for j in range(s2):
-            indices += [k1, k2, k1 + 1, k2, k2 + 1]
+            indices += [k1, k1 + 1, k2] +  [k2, k2 + 1, k1 + 1]
+            if (j == s2 - 1):
+                 indices += [k2 + 1, k2 + 1]
             k1 += 1
             k2 += 1
+        if (i != s1 - 1):
+            k1 = k2
+            k2 = k1 + s2 + 1
+            for j in range(s2):
+                indices += [k1, k2, k2 - 1] +  [k2 - 1, k1, k1 - 1]
+                if (j == s2 - 1):
+                    indices += [k2 - 1, k2 - 1]
+                k1 -= 1
+                k2 -= 1
 
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)

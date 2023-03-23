@@ -23,11 +23,11 @@ def sphere(r, s1, s2):
             if i % 2 == 0 and j % 2 == 0:
                 color += [1, 0, 0]
             elif i % 2 == 0 and j % 2 != 0:
-                color += [1, 1, 0]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 1, 1]
-            elif i % 2 != 0 and j % 2 != 0:
                 color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
 
     for i in range(s1):
         k1 = i * (s2 + 1)
