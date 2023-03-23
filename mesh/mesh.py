@@ -12,24 +12,32 @@ import numpy as np
 
 def mesh(xFirst, xLast, zFirst, zLast):
     def randFunc(x, y):
-        res = np.sqrt(x**2 + y**2)
+        res = np.sin(x) + np.cos(y)
         return res
     
     vertices, indices, color = [], [], []
     
+    
     xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
     zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
+    yMax, yMin = randFunc(xList[0], zList[0]), randFunc(xList[-1], zList[-1])
+    
     for i in range(len(xList)):
         for j in range(len(zList)):
             x = xList[i]
             z = zList[j]
             y = randFunc(x, z)
             vertices += [[x, y, z]]
-    
-    yMax = max(np.amax(vertices, axis=1))
+            if (y > yMax):
+                yMax = y
+            if (y < yMin):
+                yMin = y
+
     for i in range(len(vertices)):
-        yColor = vertices[i][1] / yMax
+        yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
         color += [yColor, 0, 1 - yColor]
+        # Red means y is higher
+        # Blue means y is lower
     
     s1 = len(xList) - 1
     s2 = len(zList) - 1
@@ -60,7 +68,7 @@ def mesh(xFirst, xLast, zFirst, zLast):
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = mesh(-3, 3, -3, 3) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors = mesh(-20, 20, -20, 20) # xFirst, xLast, zFirst, zLast
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         
