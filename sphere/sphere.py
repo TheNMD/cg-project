@@ -48,7 +48,7 @@ def sphere(r, s1, s2):
 
 class Sphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = sphere(1, 50, 50) # radius, stack, sector
+        self.vertices, self.indices, self.colors = sphere(1, 100, 100) # radius, stack, sector
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         

@@ -48,7 +48,7 @@ def ellipsoid(rx, ry, rz, s1, s2):
 
 class Ellipsoid(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = ellipsoid(1, 2, 3, 50, 50) # x_radius, y_radius, z_radius, stack, sector
+        self.vertices, self.indices, self.colors = ellipsoid(1, 1.5, 2, 100, 100) # x_radius, y_radius, z_radius, stack, sector
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         

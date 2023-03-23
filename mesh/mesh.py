@@ -10,19 +10,21 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def mesh():
-    def yFunc(x, z):
-        res = np.sqrt(x**2 + z**2)
-        return np.sin(res) / res
+def mesh(xFirst, xLast, zFirst, zLast):
+    def randFunc(x, y):
+        res = ((x**2-1)+(y**2-4)+(x**2-1)*(y**2-4)) / (x**2+y**2+1)**2
+        return res
     
     vertices, indices, color = [], [], []
     
-    xList = np.arange(-10, 10 + 0.1, 0.1)
-    zList = np.arange(-10, 10 + 0.1, 0.1)
+    xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
+    zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
     for i in range(len(xList)):
         for j in range(len(zList)):
-            y = yFunc(xList[i], zList[j])
-            vertices += [[xList[i], y, zList[j]]]
+            x = xList[i]
+            z = zList[j]
+            y = randFunc(x, z)
+            vertices += [[x, y, z]]
             if i % 2 == 0 and j % 2 == 0:
                 color += [1, 0, 0]
             elif i % 2 == 0 and j % 2 != 0:
@@ -34,7 +36,6 @@ def mesh():
     
     s1 = len(xList) - 1
     s2 = len(zList) - 1
-    
     for i in range(0, s1, 2):
         k1 = i * (s2 + 1)
         k2 = k1 + s2 + 1
@@ -62,7 +63,7 @@ def mesh():
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = mesh() # radius, height, side
+        self.vertices, self.indices, self.colors = mesh(-3, 3, -3, 3) # xFirst, xLast, zFirst, zLast
         
         # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
         
