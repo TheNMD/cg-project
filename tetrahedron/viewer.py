@@ -111,7 +111,8 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    model = Tetrahedron("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Tetrahedron("./gouraud.vert", "./gouraud.frag").setup()
+    model = Tetrahedron("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
     # start rendering loop

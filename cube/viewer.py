@@ -112,6 +112,7 @@ def main():
     # place instances of our basic objects
 
     model = Cube("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Cube("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
     # start rendering loop
