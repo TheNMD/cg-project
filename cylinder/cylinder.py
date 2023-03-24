@@ -10,51 +10,80 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def cylinder(r, h, side):
-    vertices, indices, color = [], [], []
+def cylinder(r, h, sides):
     
-    for i in range(side):
-        theta = 2 * np.pi * i / side
+    def surfaceNormal(A, B, C):
+        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
+        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
+        n = np.cross(AB, AC)
+        return n
+    
+    vertices, indices, color, triangles = [], [], [], []
+    
+    for i in range(sides):
+        theta = 2 * np.pi * i / sides
         x = r * np.cos(theta)
         y = r * np.sin(theta)
         vertices += [[x, y, 0], [x, y, h]]
-        color += [1, 0, 0] + [0, 0, 1]
+        color += [0, 0, 0] + [1, 0, 0]
 
-    # Side
-    for i in range(len(vertices)):
-        indices += [i]
-    indices += [0] + [1] + [0]
-    
+    # Sides
+    for i in range(sides):
+        k1 = i * 2
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, k1 + 1, k2] +  [k1 + 1, k2 + 1, k2]
+            triangles += [[k1, k1 + 1, k2]] + [[k1 + 1, k2 + 1, k2]]
+        else:
+            indices += [k1, k1 + 1, 0] +  [k1 + 1, 1, 0]
+            triangles += [[k1, k1 + 1, 0]] + [[k1 + 1, 1, 0]]
+
     # Bottom
     vertices += [[0, 0, 0]]
-    for i in range(len(vertices) - 1):
-        if(i % 2 == 0):
-            indices += [i] + [len(vertices) - 1]        
-    indices += [0] + [len(vertices) - 1]
+    color += [0, 0, 1]
+    for i in range(sides):
+        k1 = i * 2
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 0]
+            triangles += [[k1, len(vertices) - 1, 0]]
     
     # Move from bottom to top
-    indices += [0] + [0] + [1]
+    indices += [0] + [1]
     
     # Top
     vertices += [[0, 0, h]]
-    for i in range(len(vertices) - 1):
-        if(i % 2 != 0):
-            indices += [i] + [len(vertices) - 1]
-    indices += [1] + [len(vertices) - 1]
+    color += [1, 0, 0]
+    for i in range(sides):
+        k1 = i * 2 + 1
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 1]
+            triangles += [[k1, len(vertices) - 1, 1]]
     
-    color += [1, 0, 0] + [0, 0, 1]
+    vertexNormals = np.empty((len(vertices), 3))
+    for i in triangles:
+        surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
+        vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
     
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
+    normals = np.array(vertexNormals, dtype=np.float32)
     
-    return vertices, indices, color
+    return vertices, indices, color, normals
 
 class Cylinder(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors = cylinder(1, 2, 50) # radius, height, side
-        
-        # self.normals = [] # YOUR CODE HERE to compute vertex's normal using the coordinates
+        self.vertices, self.indices, self.colors, self.normals = cylinder(1, 2, 100) # radius, height, sides
         
         self.vao = VAO()
 
@@ -70,8 +99,41 @@ class Cylinder(object):
         # setup VAO for drawing cylinder's side
         self.vao.add_vbo(0, self.vertices, ncomponents=3, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, stride=0, offset=None)
+        self.vao.add_vbo(2, self.normals, ncomponents=3, stride=0, offset=None)
         # setup EBO for drawing cylinder's side, bottom and top
         self.vao.add_ebo(self.indices)
+
+        GL.glUseProgram(self.shader.render_idx)
+        projection = T.ortho(-1, 1, -1, 1, -1, 1)
+        modelview = np.identity(4, 'f')
+        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+
+        # Light
+        I_light = np.array([
+            [0.9, 0.4, 0.6],  # diffuse
+            [0.9, 0.4, 0.6],  # specular
+            [0.9, 0.4, 0.6]  # ambient
+        ], dtype=np.float32)
+        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
+
+        self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
+        self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
+
+        # Materials
+        K_materials = np.array([
+            [0.6, 0.4, 0.7],  # diffuse
+            [0.6, 0.4, 0.7],  # specular
+            [0.6, 0.4, 0.7]  # ambient
+        ], dtype=np.float32)
+
+        self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
+
+        shininess = 100.0
+        mode = 1
+
+        self.uma.upload_uniform_scalar1f(shininess, 'shininess')
+        self.uma.upload_uniform_scalar1i(mode, 'mode')
 
         return self
 

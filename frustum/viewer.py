@@ -111,7 +111,8 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    model = Frustum("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Frustum("./gouraud.vert", "./gouraud.frag").setup()
+    model = Frustum("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
     # start rendering loop
