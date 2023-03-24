@@ -11,12 +11,24 @@ import OpenGL.GL as GL
 import numpy as np
 
 def mesh(xFirst, xLast, zFirst, zLast):
+    
     def randFunc(x, y):
         res = np.sin(x) + np.cos(y)
         return res
     
-    vertices, indices, color = [], [], []
+    def surfaceNormal(A, B, C):
+        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
+        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
+        BA = [A[0] - B[0], A[1] - B[1], A[2] - B[2]] 
+        BC = [C[0] - B[0], C[1] - B[1], C[2] - B[2]]
+        CA = [A[0] - C[0], A[1] - C[1], A[2] - C[2]]
+        CB = [B[0] - C[0], B[1] - C[1], B[2] - C[2]]
+        nA = np.cross(AB, AC)
+        nB = np.cross(BA, BC)
+        nC = np.cross(CA, CB)
+        return [nA, nB, nC]
     
+    vertices, indices, triangles, normals, color = [], [], [], [], []
     
     xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
     zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
@@ -46,6 +58,7 @@ def mesh(xFirst, xLast, zFirst, zLast):
         k2 = k1 + s2 + 1
         for j in range(s2):
             indices += [k1, k1 + 1, k2] +  [k2, k2 + 1, k1 + 1]
+            triangles += [[k1, k1 + 1, k2]] + [[k2, k2 + 1, k1 + 1]]
             if (j == s2 - 1):
                  indices += [k2 + 1, k2 + 1]
             k1 += 1
@@ -55,11 +68,18 @@ def mesh(xFirst, xLast, zFirst, zLast):
             k2 = k1 + s2 + 1
             for j in range(s2):
                 indices += [k1, k2, k2 - 1] +  [k2 - 1, k1, k1 - 1]
+                triangles += [[k1, k2, k2 - 1]] + [[k2 - 1, k1, k1 - 1]]
                 if (j == s2 - 1):
                     indices += [k2 - 1, k2 - 1]
                 k1 -= 1
                 k2 -= 1
 
+    for i in triangles:
+        normals += surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
+        break
+    
+    print(normals)
+        
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)

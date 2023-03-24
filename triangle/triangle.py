@@ -16,10 +16,11 @@ class Triangle:
             [+1, -1, 0],
             [ 0, +1, 0]
             ], dtype=np.float32)
+        
         normals = np.random.normal(0, 3, (3, 3)).astype(np.float32)
         normals[:, 2] = np.abs(normals[:, 2])
         self.normals = normals / np.linalg.norm(normals, axis=1, keepdims=True)
-
+        
         self.colors = np.array([
             [1.0, 0.5, 0.0],
             [0.5, 1.0, 0.0],
