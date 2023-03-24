@@ -33,19 +33,21 @@ class Tetrahedron(object):
         for i in range(len(self.indices) - 2):
             triangles += [[self.indices[i], self.indices[i + 1], self.indices[i + 2]]]
         
-        self.normals = np.empty((len(self.vertices), 3))
+        vertexNormals = np.empty((len(self.vertices), 3))
         for i in triangles:
             surfaceNormals = surfaceNormal(self.vertices[i[0]], self.vertices[i[1]], self.vertices[i[2]])
-            self.normals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-            self.normals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-            self.normals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+            vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+            vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+            vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+
+        self.normals = np.array(vertexNormals, dtype=np.float32)
         
         # colors: RGB format
         self.colors = np.array([
-                [1.0, 1.0, 1.0],
-                [1.0, 1.0, 0.0], 
-                [1.0, 0.0, 1.0], 
                 [1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0], 
+                [0.0, 0.0, 1.0], 
+                [0.0, 0.0, 1.0],
             ],dtype= np.float32)
 
         self.vao = VAO()
