@@ -111,7 +111,8 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
+    model = Sphere("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
     # start rendering loop

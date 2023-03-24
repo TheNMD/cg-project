@@ -75,7 +75,7 @@ def main():
 
     # Triangles
     model = Triangle("./gouraud.vert", "./gouraud.frag").setup()
-    #model = Triangle("./phong.vert", "./phong.frag").setup()
+    # model = Triangle("./phong.vert", "./phong.frag").setup()
 
     #model = TriangleEx("./phong.vert", "./phong.frag").setup()
 

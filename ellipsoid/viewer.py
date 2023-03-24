@@ -111,7 +111,8 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    model = Ellipsoid("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Ellipsoid("./gouraud.vert", "./gouraud.frag").setup()
+    model = Ellipsoid("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
     # start rendering loop
