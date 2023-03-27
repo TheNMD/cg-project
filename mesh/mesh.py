@@ -73,12 +73,15 @@ def mesh(xFirst, xLast, zFirst, zLast):
         n = np.cross(AB, AC)
         return n
 
-    vertexNormals = np.empty((len(vertices), 3))
+    vertexNormals = np.zeros((len(vertices), 3))
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
-        vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[0]] += surfaceNormals
+        vertexNormals[i[1]] += surfaceNormals
+        vertexNormals[i[2]] += surfaceNormals
+    
+    for i in vertices:
+        i = i / np.linalg.norm(i)
     
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
@@ -103,6 +106,7 @@ class Mesh(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
