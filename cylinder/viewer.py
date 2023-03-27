@@ -111,7 +111,7 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    #model = Cylinder("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Cylinder("./gouraud.vert", "./gouraud.frag").setup()
     model = Cylinder("./phong.vert", "./phong.frag").setup()
     viewer.add(model)
 
