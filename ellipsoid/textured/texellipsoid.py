@@ -10,72 +10,42 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def texmesh(xFirst, xLast, zFirst, zLast):
+def ellipsoid(rx, ry, rz, stk, sec):   
     vertices, indices, color, triangles, texcoord = [], [], [], [], []
     
-    def randFunc(x, y):
-        # if x > 8 or x < -8 or y > 8 or y < -8:
-        #     return 0
-        res = np.sin(x) + np.cos(y)
-        return res
-    
-    xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
-    zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
-    yMax, yMin = randFunc(xList[0], zList[0]), randFunc(xList[-1], zList[-1])
-    
-    for i in range(len(xList)):
-        for j in range(len(zList)):
-            x = xList[i]
-            z = zList[j]
-            y = randFunc(x, z)
+    for i in range(stk + 1):
+        phi = np.pi / 2 - np.pi * i / stk
+        for j in range(sec + 1):
+            theta = 2 * np.pi * j / sec
+            x = rx * np.cos(phi) * np.cos(theta)
+            y = ry * np.cos(phi) * np.sin(theta)
+            z = rz * np.sin(phi)
             vertices += [[x, y, z]]
-            if (y > yMax):
-                yMax = y
-            if (y < yMin):
-                yMin = y
             if i % 2 == 0 and j % 2 == 0:
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 == 0 and j % 2 != 0:
+                color += [1, 0, 0]
                 texcoord += [[0.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                texcoord += [[1.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
+            elif i % 2 == 0 and j % 2 != 0:
+                color += [0, 0, 1]
                 texcoord += [[1.0 , 0.0]]
-    
-    s1 = len(xList) - 1
-    s2 = len(zList) - 1
-    for i in range(0, s1, 2):
-        k1 = i * (s2 + 1)
-        k2 = k1 + s2 + 1
-        for j in range(s2):
-            indices += [k1, k1 + 1, k2] +  [k2, k2 + 1, k1 + 1]
-            triangles += [[k1, k1 + 1, k2]] + [[k2, k2 + 1, k1 + 1]]
-            if (j == s2 - 1):
-                 indices += [k2 + 1, k2 + 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+                texcoord += [[0.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
+                texcoord += [[1.0 , 1.0]]
+
+    for i in range(stk):
+        k1 = i * (sec + 1)
+        k2 = k1 + sec + 1
+        for j in range(sec):
+            if i != 0:
+                indices += [k1, k2, k1 + 1]
+                triangles += [[k1, k2, k1 + 1]]
+            if i != (stk - 1):
+                indices += [k1 + 1, k2, k2 + 1]
+                triangles += [[k1 + 1, k2, k2 + 1]]
             k1 += 1
             k2 += 1
-        if (i != s1 - 1):
-            k1 = k2
-            k2 = k1 + s2 + 1
-            for j in range(s2):
-                indices += [k1, k2, k2 - 1] +  [k2 - 1, k1, k1 - 1]
-                triangles += [[k1, k2, k2 - 1]] + [[k2 - 1, k1, k1 - 1]]
-                if (j == s2 - 1):
-                    indices += [k2 - 1, k2 - 1]
-                k1 -= 1
-                k2 -= 1
-
-    if yMax != yMin:
-        for i in range(len(vertices)):
-            yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
-            color += [yColor, 0, 1 - yColor]
-            # Red means y is higher
-            # Blue means y is lower
-    else:
-        for i in range(len(vertices)):
-            color += [0, 0, 1]
-
-    texcoord += [[0.5, 0.5]]
 
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
@@ -83,13 +53,16 @@ def texmesh(xFirst, xLast, zFirst, zLast):
         n = np.cross(AB, AC)
         return n
 
-    vertexNormals = np.empty((len(vertices), 3))
+    vertexNormals = np.zeros((len(vertices), 3))
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
-        vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[0]] += surfaceNormals
+        vertexNormals[i[1]] += surfaceNormals
+        vertexNormals[i[2]] += surfaceNormals
     
+    for i in vertices:
+        i = i / np.linalg.norm(i)
+
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
@@ -98,17 +71,15 @@ def texmesh(xFirst, xLast, zFirst, zLast):
     
     return vertices, indices, color, normals, texcoord
 
-class TexMesh(object):
+class TexEllipsoid(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = texmesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals, self.texcoord = ellipsoid(1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
         
         self.vao = VAO()
 
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
 
-        self.selected_texture = 1
-        
     """
     Create object -> call setup -> call draw
     """
@@ -161,15 +132,9 @@ class TexMesh(object):
 
     def draw(self, projection, modelview, model):
         self.vao.activate()
-        
         GL.glUseProgram(self.shader.render_idx)
-        
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        
-        self.uma.upload_uniform_scalar1i(self.selected_texture, 'selected_texture')
-        self.uma.upload_uniform_scalar1i(1, 'face')
-        
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
 
     def key_handler(self, key):
