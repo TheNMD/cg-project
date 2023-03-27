@@ -8,6 +8,7 @@ import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
 from transform import Trackball
 from mesh import *
+from texmesh import *
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
@@ -114,8 +115,8 @@ def main():
     # place instances of our basic objects
 
     # model = Mesh("./gouraud.vert", "./gouraud.frag").setup()
-    model = Mesh("./phong.vert", "./phong.frag").setup()
-    #model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    # model = Mesh("./phong.vert", "./phong.frag").setup()
+    model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop

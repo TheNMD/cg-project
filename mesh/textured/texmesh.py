@@ -11,7 +11,7 @@ import OpenGL.GL as GL
 import numpy as np
 
 def texmesh(xFirst, xLast, zFirst, zLast):
-    vertices, indices, color, texcolor, triangles = [], [], [], [], []
+    vertices, indices, color, texcoord, triangles = [], [], [], [], []
     
     def randFunc(x, y):
         # if x > 8 or x < -8 or y > 8 or y < -8:
@@ -33,6 +33,14 @@ def texmesh(xFirst, xLast, zFirst, zLast):
                 yMax = y
             if (y < yMin):
                 yMin = y
+            if i % 2 == 0 and j % 2 == 0:
+                texcoord += [[0.0 , 0.0]]
+            elif i % 2 == 0 and j % 2 != 0:
+                texcoord += [[0.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 == 0:
+                texcoord += [[1.0 , 0.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                texcoord += [[1.0 , 1.0]]
     
     s1 = len(xList) - 1
     s2 = len(zList) - 1
@@ -61,13 +69,13 @@ def texmesh(xFirst, xLast, zFirst, zLast):
         for i in range(len(vertices)):
             yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
             color += [yColor, 0, 1 - yColor]
-            texcolor += [0.5, 0.5]
             # Red means y is higher
             # Blue means y is lower
     else:
         for i in range(len(vertices)):
             color += [0, 0, 1]
-            texcolor += [0.5, 0.5]
+
+    texcoord += [[0.5, 0.5]]
 
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
@@ -86,13 +94,13 @@ def texmesh(xFirst, xLast, zFirst, zLast):
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
     normals = np.array(vertexNormals, dtype=np.float32)
-    texcolor = np.array(texcolor, dtype=np.float32)
+    texcoord = np.array(texcoord, dtype=np.float32)
     
-    return vertices, indices, color, normals, texcolor
+    return vertices, indices, color, normals, texcoord
 
 class TexMesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcolor = texmesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals, self.texcoord = texmesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
         
         self.vao = VAO()
 
@@ -108,7 +116,7 @@ class TexMesh(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(3, self.texcolor, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoord, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
@@ -147,7 +155,7 @@ class TexMesh(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
-        self.uma.setup_texture("texture1", "./textured/image/thuylinh.jpeg")
+        self.uma.setup_texture("texture", "./textured/image/test.png")
         
         return self
 

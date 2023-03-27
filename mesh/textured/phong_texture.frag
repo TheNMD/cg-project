@@ -14,7 +14,7 @@ uniform float shininess; // Shininess
 uniform vec3 light_pos; // Light position
 out vec4 fragColor;
 
-uniform sampler2D texture1;
+uniform sampler2D texture;
 uniform int selected_texture;
 
 void main() {
@@ -36,7 +36,7 @@ void main() {
   float texture_factor = 1.0 - (color_factor + phong_factor);
 
   vec4 texture_color;
-  texture_color = texture2D(texture1, texcoord_interp);
+  texture_color = texture2D(texture, texcoord_interp);
 
   fragColor = color_factor*color_interp4 + phong_factor*fragColor + texture_factor*texture_color;
 }
