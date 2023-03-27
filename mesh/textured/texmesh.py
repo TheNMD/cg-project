@@ -10,8 +10,8 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def mesh(xFirst, xLast, zFirst, zLast):
-    vertices, indices, color, triangles = [], [], [], []
+def texmesh(xFirst, xLast, zFirst, zLast):
+    vertices, indices, color, texcolor, triangles = [], [], [], [], []
     
     def randFunc(x, y):
         # if x > 8 or x < -8 or y > 8 or y < -8:
@@ -61,11 +61,13 @@ def mesh(xFirst, xLast, zFirst, zLast):
         for i in range(len(vertices)):
             yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
             color += [yColor, 0, 1 - yColor]
+            texcolor += [0.5, 0.5]
             # Red means y is higher
             # Blue means y is lower
     else:
         for i in range(len(vertices)):
             color += [0, 0, 1]
+            texcolor += [0.5, 0.5]
 
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
@@ -84,17 +86,20 @@ def mesh(xFirst, xLast, zFirst, zLast):
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
     normals = np.array(vertexNormals, dtype=np.float32)
+    texcolor = np.array(texcolor, dtype=np.float32)
     
-    return vertices, indices, color, normals
+    return vertices, indices, color, normals, texcolor
 
-class Mesh(object):
+class TexMesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals, self.texcolor = texmesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
         
         self.vao = VAO()
 
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
+
+        self.selected_texture = 1
         
     """
     Create object -> call setup -> call draw
@@ -103,6 +108,7 @@ class Mesh(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcolor, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
@@ -125,7 +131,7 @@ class Mesh(object):
         ], dtype=np.float32)
 
         shininess = 100.0
-        mode = 1
+        phong_factor = 0.2
 
         GL.glUseProgram(self.shader.render_idx)
         
@@ -139,15 +145,23 @@ class Mesh(object):
         self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
         
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma.upload_uniform_scalar1i(mode, 'mode')
+        self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
+        
+        self.uma.setup_texture("texture1", "./textured/image/thuylinh.jpeg")
         
         return self
 
     def draw(self, projection, modelview, model):
         self.vao.activate()
+        
         GL.glUseProgram(self.shader.render_idx)
+        
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        
+        self.uma.upload_uniform_scalar1i(self.selected_texture, 'selected_texture')
+        self.uma.upload_uniform_scalar1i(1, 'face')
+        
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
 
     def key_handler(self, key):
