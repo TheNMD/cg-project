@@ -10,7 +10,7 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere(r, stk, sec):   
+def sphere1(r, stk, sec):   
     vertices, indices, color, triangles = [], [], [], []
     
     for i in range(stk + 1):
@@ -49,12 +49,15 @@ def sphere(r, stk, sec):
         n = np.cross(AB, AC)
         return n
 
-    vertexNormals = np.empty((len(vertices), 3))
+    vertexNormals = np.zeros((len(vertices), 3))
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
-        vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[0]] += surfaceNormals
+        vertexNormals[i[1]] += surfaceNormals
+        vertexNormals[i[2]] += surfaceNormals
+    
+    for i in vertices:
+        i = i / np.linalg.norm(i)
 
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
@@ -63,9 +66,18 @@ def sphere(r, stk, sec):
     
     return vertices, indices, color, normals
 
-class Sphere(object):
+class Sphere1(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = sphere(1, 100, 100) # radius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals = sphere1(1, 100, 100) # radius, stacks, sectors
+        
+        self.vao = VAO()
+
+        self.shader = Shader(vert_shader, frag_shader)
+        self.uma = UManager(self.shader)
+
+class Sphere2(object):
+    def __init__(self, vert_shader, frag_shader):
+        self.vertices, self.indices, self.colors, self.normals = sphere2(1, 100, 100) # radius, stacks, sectors
         
         self.vao = VAO()
 
