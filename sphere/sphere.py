@@ -10,7 +10,7 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere1(r, stk, sec):   
+def sphere(r, stk, sec):   
     vertices, indices, color, triangles = [], [], [], []
     
     for i in range(stk + 1):
@@ -66,18 +66,9 @@ def sphere1(r, stk, sec):
     
     return vertices, indices, color, normals
 
-class Sphere1(object):
+class Sphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = sphere1(1, 100, 100) # radius, stacks, sectors
-        
-        self.vao = VAO()
-
-        self.shader = Shader(vert_shader, frag_shader)
-        self.uma = UManager(self.shader)
-
-class Sphere2(object):
-    def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = sphere2(1, 100, 100) # radius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals = sphere(1, 100, 100) # radius, stacks, sectors
         
         self.vao = VAO()
 
