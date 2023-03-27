@@ -115,7 +115,7 @@ def main():
     # place instances of our basic objects
 
     # model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
-    model = Sphere("./phong.vert", "./phong.frag").setup()
+    # model = Sphere("./phong.vert", "./phong.frag").setup()
     model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 

@@ -7,52 +7,75 @@ from buffer import *
 import ctypes
 import glfw
 
-import OpenGL.GL as GL
+import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np
 
-def ellipsoid(rx, ry, rz, stk, sec):   
+def frustum(r, h1, h2, sides):
     vertices, indices, color, triangles, texcoord = [], [], [], [], []
     
-    for i in range(stk + 1):
-        phi = np.pi / 2 - np.pi * i / stk
-        for j in range(sec + 1):
-            theta = 2 * np.pi * j / sec
-            x = rx * np.cos(phi) * np.cos(theta)
-            y = ry * np.cos(phi) * np.sin(theta)
-            z = rz * np.sin(phi)
-            vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-                texcoord += [[1.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
-                texcoord += [[1.0 , 1.0]]
+    ratio = h2 / h1
+    
+    for i in range(sides):
+        theta = 2 * np.pi * i / sides
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+        x1 = x * ratio
+        y1 = y * ratio
+        vertices += [[x, y, 1], [x1, y1, 1 + h1 * ratio]]
+        color += [0, 0, 1] + [1, 0, 0]
+        if i % 2 == 0:
+            texcoord += [[0.0, 1.0], [0.0, 0.0]]
+        elif i % 2 != 0:
+            texcoord += [[1.0, 1.0], [1.0, 0.0]]
 
-    for i in range(stk):
-        k1 = i * (sec + 1)
-        k2 = k1 + sec + 1
-        for j in range(sec):
-            if i != 0:
-                indices += [k1, k2, k1 + 1]
-                triangles += [[k1, k2, k1 + 1]]
-            if i != (stk - 1):
-                indices += [k1 + 1, k2, k2 + 1]
-                triangles += [[k1 + 1, k2, k2 + 1]]
-            k1 += 1
-            k2 += 1
+    # Sides
+    for i in range(sides):
+        k1 = i * 2
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, k1 + 1, k2] +  [k1 + 1, k2 + 1, k2]
+            triangles += [[k1, k1 + 1, k2]] + [[k1 + 1, k2 + 1, k2]]
+        else:
+            indices += [k1, k1 + 1, 0] +  [k1 + 1, 1, 0]
+            triangles += [[k1, k1 + 1, 0]] + [[k1 + 1, 1, 0]]
 
+    # Bottom
+    vertices += [[0, 0, 1]]
+    color += [0, 0, 1]
+    texcoord += [[0.5, 0.0]]
+    for i in range(sides):
+        k1 = i * 2
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 0]
+            triangles += [[k1, len(vertices) - 1, 0]]
+    
+    # Move from bottom to top
+    indices += [0] + [1]
+    
+    # Top
+    vertices += [[0, 0, 1 + h1 * ratio]]
+    color += [1, 0, 0]
+    texcoord += [[0.5, 1.0]]
+    for i in range(sides):
+        k1 = i * 2 + 1
+        k2 = k1 + 2
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 1]
+            triangles += [[k1, len(vertices) - 1, 1]]
+    
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
         AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
         n = np.cross(AB, AC)
         return n
-
+    
     vertexNormals = np.zeros((len(vertices), 3))
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
@@ -62,7 +85,7 @@ def ellipsoid(rx, ry, rz, stk, sec):
     
     for i in vertices:
         i = i / np.linalg.norm(i)
-
+    
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
@@ -71,9 +94,9 @@ def ellipsoid(rx, ry, rz, stk, sec):
     
     return vertices, indices, color, normals, texcoord
 
-class TexEllipsoid(object):
+class TexFrustum(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = ellipsoid(1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals, self.texcoord = frustum(1, 2, 1, 100) # radius, height 1, height 2, sides
         
         self.vao = VAO()
 
@@ -127,7 +150,7 @@ class TexEllipsoid(object):
         
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
-        
+
         self.uma.setup_texture("texture", "./textured/image/test.png")
         
         return self

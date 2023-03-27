@@ -80,6 +80,8 @@ class TexSphere(object):
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
 
+        self.selected_texture = 1
+        
     """
     Create object -> call setup -> call draw
     """

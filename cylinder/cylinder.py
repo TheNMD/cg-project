@@ -17,7 +17,7 @@ def cylinder(r, h, sides):
         theta = 2 * np.pi * i / sides
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        vertices += [[x, y, 0], [x, y, h]]
+        vertices += [[x, y, -h / 2], [x, y, h / 2]]
         color += [0, 0, 1] + [1, 0, 0]
 
     # Sides
@@ -32,7 +32,7 @@ def cylinder(r, h, sides):
             triangles += [[k1, k1 + 1, 0]] + [[k1 + 1, 1, 0]]
 
     # Bottom
-    vertices += [[0, 0, 0]]
+    vertices += [[0, 0, -h / 2]]
     color += [0, 0, 1]
     for i in range(sides):
         k1 = i * 2
@@ -48,7 +48,7 @@ def cylinder(r, h, sides):
     indices += [0] + [1]
     
     # Top
-    vertices += [[0, 0, h]]
+    vertices += [[0, 0, h / 2]]
     color += [1, 0, 0]
     for i in range(sides):
         k1 = i * 2 + 1
@@ -85,7 +85,7 @@ def cylinder(r, h, sides):
 
 class Cylinder(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = cylinder(1, 2, 100) # radius, height, sides
+        self.vertices, self.indices, self.colors, self.normals = cylinder(5, 2, 100) # radius, height, sides
         
         self.vao = VAO()
 

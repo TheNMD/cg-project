@@ -17,11 +17,11 @@ def cone(r, h, sides):
         theta = 2 * np.pi * i / sides
         x = r * np.cos(theta)
         y = r * np.sin(theta)
-        vertices += [[x, y, 0]]
+        vertices += [[x, y, -h / 2]]
         color += [0, 0, 1]
         
     # Sides
-    vertices += [[0, 0, h]]
+    vertices += [[0, 0,  h / 2]]
     color += [1, 0, 0]
     for i in range(sides):
         k1 = i

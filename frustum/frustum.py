@@ -21,7 +21,7 @@ def frustum(r, h1, h2, sides):
         y = r * np.sin(theta)
         x1 = x * ratio
         y1 = y * ratio
-        vertices += [[x, y, 0], [x1, y1, h1 * ratio]]
+        vertices += [[x, y, 1], [x1, y1, 1 + h1 * ratio]]
         color += [0, 0, 1] + [1, 0, 0]
 
     # Sides
@@ -36,7 +36,7 @@ def frustum(r, h1, h2, sides):
             triangles += [[k1, k1 + 1, 0]] + [[k1 + 1, 1, 0]]
 
     # Bottom
-    vertices += [[0, 0, 0]]
+    vertices += [[0, 0, 1]]
     color += [0, 0, 1]
     for i in range(sides):
         k1 = i * 2
@@ -52,7 +52,7 @@ def frustum(r, h1, h2, sides):
     indices += [0] + [1]
     
     # Top
-    vertices += [[0, 0, h1 * ratio]]
+    vertices += [[0, 0, 1 + h1 * ratio]]
     color += [1, 0, 0]
     for i in range(sides):
         k1 = i * 2 + 1

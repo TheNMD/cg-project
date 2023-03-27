@@ -10,49 +10,54 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def ellipsoid(rx, ry, rz, stk, sec):   
+def cone(r, h, sides):
     vertices, indices, color, triangles, texcoord = [], [], [], [], []
     
-    for i in range(stk + 1):
-        phi = np.pi / 2 - np.pi * i / stk
-        for j in range(sec + 1):
-            theta = 2 * np.pi * j / sec
-            x = rx * np.cos(phi) * np.cos(theta)
-            y = ry * np.cos(phi) * np.sin(theta)
-            z = rz * np.sin(phi)
-            vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-                texcoord += [[1.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
-                texcoord += [[1.0 , 1.0]]
-
-    for i in range(stk):
-        k1 = i * (sec + 1)
-        k2 = k1 + sec + 1
-        for j in range(sec):
-            if i != 0:
-                indices += [k1, k2, k1 + 1]
-                triangles += [[k1, k2, k1 + 1]]
-            if i != (stk - 1):
-                indices += [k1 + 1, k2, k2 + 1]
-                triangles += [[k1 + 1, k2, k2 + 1]]
-            k1 += 1
-            k2 += 1
-
+    for i in range(sides):
+        theta = 2 * np.pi * i / sides
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+        vertices += [[x, y, -h / 2]]
+        color += [0, 0, 1]
+        if i % 2 == 0:
+            texcoord += [[0.0, 1.0]]
+        elif i % 2 != 0:
+            texcoord += [[1.0, 1.0]]
+        
+    # Sides
+    vertices += [[0, 0,  h / 2]]
+    texcoord += [[0.5, 0.0]]
+    color += [1, 0, 0]
+    for i in range(sides):
+        k1 = i
+        k2 = k1 + 1
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 0]
+            triangles += [[k1, len(vertices) - 1, 0]]
+    
+    # Bottom
+    vertices += [[0, 0, -h / 2]]
+    color += [0, 0, 1]
+    texcoord += [[0.5, 0.0]]
+    for i in range(sides):
+        k1 = i
+        k2 = k1 + 1
+        if i != sides - 1:
+            indices += [k1, len(vertices) - 1, k2]
+            triangles += [[k1, len(vertices) - 1, k2]]
+        else:
+            indices += [k1, len(vertices) - 1, 0]
+            triangles += [[k1, len(vertices) - 1, 0]]
+    
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
         AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
         n = np.cross(AB, AC)
         return n
-
+    
     vertexNormals = np.zeros((len(vertices), 3))
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
@@ -62,7 +67,7 @@ def ellipsoid(rx, ry, rz, stk, sec):
     
     for i in vertices:
         i = i / np.linalg.norm(i)
-
+    
     vertices = np.array(vertices, dtype=np.float32)
     indices = np.array(indices, dtype=np.uint32)
     color = np.array(color, dtype=np.float32)
@@ -71,9 +76,9 @@ def ellipsoid(rx, ry, rz, stk, sec):
     
     return vertices, indices, color, normals, texcoord
 
-class TexEllipsoid(object):
+class TexCone(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = ellipsoid(1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals, self.texcoord = cone(1, 2, 100) # radius, height, sides
         
         self.vao = VAO()
 
@@ -81,7 +86,7 @@ class TexEllipsoid(object):
         self.uma = UManager(self.shader)
         
         self.selected_texture = 1
-
+     
     """
     Create object -> call setup -> call draw
     """

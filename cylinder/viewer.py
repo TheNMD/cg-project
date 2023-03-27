@@ -1,5 +1,6 @@
 import sys
 sys.path.append("../libs")
+sys.path.append("./textured")
 
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
@@ -7,6 +8,8 @@ import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
 from transform import Trackball
 from cylinder import *
+from texcylinder import *
+
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
     """ GLFW viewer windows, with classic initialization & graphics loop """
@@ -112,7 +115,8 @@ def main():
     # place instances of our basic objects
 
     # model = Cylinder("./gouraud.vert", "./gouraud.frag").setup()
-    model = Cylinder("./phong.vert", "./phong.frag").setup()
+    # model = Cylinder("./phong.vert", "./phong.frag").setup()
+    model = TexCylinder("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop
