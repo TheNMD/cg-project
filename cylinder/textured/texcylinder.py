@@ -148,6 +148,7 @@ class TexCylinder(object):
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
         self.uma.setup_texture("texture", "./textured/image/test.png")
+        # self.uma.setup_texture("texture", "./textured/image/test1.png")
         
         return self
 
