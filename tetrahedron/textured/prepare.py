@@ -8,13 +8,9 @@ def prepare_texture(size, in_files, out_file):
     cv2.imwrite(out_file, texture)
 
 size = (500, 500)
-in_files_1 = ["./image/thuylinh.jpeg",
-          "./image/tieuvi.jpeg"
-          ]
-out_file_1 = "./image/texture1.jpeg"
-in_files_2 = ["./image/ledinh.jpeg",
-              "./image/lotu.jpeg"
-              ]
-out_file_2 = "./image/texture2.jpeg"
+in_files_1 = ["./image/test.png",
+              "./image/test.png",
+              "./image/test.png"]
+out_file_1 = "./image/texture.png"
+
 prepare_texture(size, in_files_1, out_file_1)
-prepare_texture(size, in_files_2, out_file_2)
