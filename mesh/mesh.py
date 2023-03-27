@@ -14,6 +14,8 @@ def mesh(xFirst, xLast, zFirst, zLast):
     vertices, indices, color, triangles = [], [], [], []
     
     def randFunc(x, y):
+        # if x > 8 or x < -8 or y > 8 or y < -8:
+        #     return 0
         res = np.sin(x) + np.cos(y)
         return res
     
@@ -87,7 +89,7 @@ def mesh(xFirst, xLast, zFirst, zLast):
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-3, 3, -3, 3) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
         
         self.vao = VAO()
 
@@ -104,8 +106,8 @@ class Mesh(object):
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
-        projection = T.ortho(-1, 1, -1, 1, -1, 1)
-        modelview = np.identity(4, 'f')
+        # projection = T.ortho(-1, 1, -1, 1, -1, 1)
+        # modelview = np.identity(4, 'f')
 
         # Light
         I_light = np.array([
@@ -123,13 +125,14 @@ class Mesh(object):
         ], dtype=np.float32)
 
         shininess = 100.0
+        phong_factor = 0.2
         mode = 1
 
         GL.glUseProgram(self.shader.render_idx)
         
         self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        # self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        # self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
 
         self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
         self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
@@ -137,23 +140,19 @@ class Mesh(object):
         self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
         
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
+        self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         self.uma.upload_uniform_scalar1i(mode, 'mode')
         
         return self
 
-    def draw(self, projection, view, model):
+    def draw(self, projection, modelview, model):
+        self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
-        modelview = view
-
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-
-        self.vao.activate()
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
 
-
     def key_handler(self, key):
-
         if key == glfw.KEY_1:
             self.selected_texture = 1
         if key == glfw.KEY_2:
