@@ -34,15 +34,21 @@ class Pyramid(object):
             n = np.cross(AB, AC)
             return n
         
+        def normalize(v):
+            norm = np.linalg.norm(v)
+            if norm == 0: 
+                return v
+            return v / norm
+        
         vertexNormals = np.zeros((len(self.vertices), 3))
+        
         for i in triangles:
             surfaceNormals = surfaceNormal(self.vertices[i[0]], self.vertices[i[1]], self.vertices[i[2]])
             vertexNormals[i[0]] += surfaceNormals
             vertexNormals[i[1]] += surfaceNormals
             vertexNormals[i[2]] += surfaceNormals
         
-        for i in self.vertices:
-            i = i / np.linalg.norm(i)
+        vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
 
         self.normals = np.array(vertexNormals, dtype=np.float32)
 

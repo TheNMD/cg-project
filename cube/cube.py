@@ -27,25 +27,31 @@ class Cube(object):
                 2, 3, 6, 7, 5, 3, 1, 2, 0, 6, 4, 5, 0, 1
             ],  dtype=np.uint32)
 
+        triangles = []
+        for i in range(len(self.indices) - 2):
+            triangles += [[self.indices[i], self.indices[i + 1], self.indices[i + 2]]]
+        
         def surfaceNormal(A, B, C):
             AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
             AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
             n = np.cross(AB, AC)
             return n
-
-        triangles = []
-        for i in range(len(self.indices) - 2):
-            triangles += [[self.indices[i], self.indices[i + 1], self.indices[i + 2]]]
+        
+        def normalize(v):
+            norm = np.linalg.norm(v)
+            if norm == 0: 
+                return v
+            return v / norm
         
         vertexNormals = np.zeros((len(self.vertices), 3))
+        
         for i in triangles:
             surfaceNormals = surfaceNormal(self.vertices[i[0]], self.vertices[i[1]], self.vertices[i[2]])
             vertexNormals[i[0]] += surfaceNormals
             vertexNormals[i[1]] += surfaceNormals
             vertexNormals[i[2]] += surfaceNormals
         
-        for i in self.vertices:
-            i = i / np.linalg.norm(i)
+        vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
 
         self.normals = np.array(vertexNormals, dtype=np.float32)
 

@@ -58,7 +58,7 @@ def sphere(r, stk, sec):
                 color += [0, 0, 1]
             elif i % 2 != 0 and j % 2 != 0:
                 color += [1, 0, 0]
-
+    
     color = np.array(color, dtype=np.float32)
 
     # Calculating vertex normals

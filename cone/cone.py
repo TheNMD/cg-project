@@ -13,15 +13,21 @@ import numpy as np
 def cone(r, h, sides):
     vertices, indices, color, triangles = [], [], [], []
     
-    for i in range(sides):
-        theta = 2 * np.pi * i / sides
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-        vertices += [[x, y, -h / 2]]
+    # Calculating vertex list and vertex color
+    sideList = np.arange(0, sides, 1)
+    
+    thetaList = 2 * np.pi * sideList / sides
+    
+    xList = r * np.cos(thetaList)
+    zList = r * np.sin(thetaList)
+    
+    for i in range(len(thetaList)):
+        vertices += [[xList[i], -h / 2, zList[i]]]
         color += [0, 0, 1]
-        
+    
+    # Calculating index list 
     # Sides
-    vertices += [[0, 0,  h / 2]]
+    vertices += [[0,  h / 2, 0]]
     color += [1, 0, 0]
     for i in range(sides):
         k1 = i
@@ -34,7 +40,7 @@ def cone(r, h, sides):
             triangles += [[k1, len(vertices) - 1, 0]]
     
     # Bottom
-    vertices += [[0, 0, 0]]
+    vertices += [[0, -h / 2, 0]]
     color += [0, 0, 1]
     for i in range(sides):
         k1 = i
@@ -46,25 +52,35 @@ def cone(r, h, sides):
             indices += [k1, len(vertices) - 1, 0]
             triangles += [[k1, len(vertices) - 1, 0]]
     
+    vertices = np.array(vertices, dtype=np.float32)
+    
+    indices = np.array(indices, dtype=np.uint32)
+    
+    color = np.array(color, dtype=np.float32)
+    
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
         AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
-    
+        res = np.cross(AB, AC)
+        return res
+
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
     normals = np.array(vertexNormals, dtype=np.float32)
     
     return vertices, indices, color, normals

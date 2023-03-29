@@ -116,7 +116,7 @@ def main():
 
     # model = Frustum("./gouraud.vert", "./gouraud.frag").setup()
     model = Frustum("./phong.vert", "./phong.frag").setup()
-    #model = TexFrustum("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    # model = TexFrustum("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop
