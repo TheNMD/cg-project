@@ -10,32 +10,21 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def mesh(xFirst, xLast, zFirst, zLast):
+def mesh(xFirst, xLast, zFirst, zLast, step):
     vertices, indices, color, triangles = [], [], [], []
     
-    def randFunc(x, y):
-        # if x > 8 or x < -8 or y > 8 or y < -8:
-        #     return 0
-        res = np.abs(np.sin(x) + np.cos(y))
-        return res
+    xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
+    yMesh = xMesh**2 + zMesh**2
+    yMax, yMin = yMesh.max(), yMesh.min()
     
-    xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
-    zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
-    yMax, yMin = randFunc(xList[0], zList[0]), randFunc(xList[-1], zList[-1])
-    
-    for i in range(len(xList)):
-        for j in range(len(zList)):
-            x = xList[i]
-            z = zList[j]
-            y = randFunc(x, z)
-            vertices += [[x, y, z]]
-            if (y > yMax):
-                yMax = y
-            if (y < yMin):
-                yMin = y
-    
-    s1 = len(xList) - 1
-    s2 = len(zList) - 1
+    xList = xMesh.flatten()
+    yList = yMesh.flatten()
+    zList = zMesh.flatten()
+        
+    vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+
+    s1 = int(np.sqrt(len(xList))) - 1
+    s2 = int(np.sqrt(len(zList))) - 1
     for i in range(0, s1, 2):
         k1 = i * (s2 + 1)
         k2 = k1 + s2 + 1
@@ -92,7 +81,7 @@ def mesh(xFirst, xLast, zFirst, zLast):
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10, 100) # xFirst, xLast, zFirst, zLast, step
         
         self.vao = VAO()
 
