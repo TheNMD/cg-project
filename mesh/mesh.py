@@ -13,8 +13,10 @@ import numpy as np
 def mesh(xFirst, xLast, zFirst, zLast, step):
     vertices, indices, color, triangles = [], [], [], []
     
+    # Calculating vertex list
+    
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
-    yMesh = xMesh**2 + zMesh**2
+    yMesh = (np.sin(xMesh) + np.cos(zMesh))
     yMax, yMin = yMesh.max(), yMesh.min()
     
     xList = xMesh.flatten()
@@ -22,7 +24,9 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     zList = zMesh.flatten()
         
     vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+    vertices = np.array(vertices, dtype=np.float32)
 
+    # Calculating index list
     s1 = int(np.sqrt(len(xList))) - 1
     s2 = int(np.sqrt(len(zList))) - 1
     for i in range(0, s1, 2):
@@ -46,35 +50,36 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
                 k1 -= 1
                 k2 -= 1
 
-    if yMax != yMin:
-        for i in range(len(vertices)):
-            yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
-            color += [yColor, 0, 1 - yColor]
-            # Red means y is higher
-            # Blue means y is lower
-    else:
-        for i in range(len(vertices)):
-            color += [0, 0, 1]
+    indices = np.array(indices, dtype=np.uint32)
 
+    # Calculating vertex color
+    if yMax != yMin:
+        yColor = list(map(lambda x : (x + abs(yMin)) / (yMax + abs(yMin)), vertices[:, 1]))
+        color = list(map(lambda x : [x, 0, 1 - x], yColor))     
+        # Red means y is higher
+        # Blue means y is lower
+    else:
+        color = list((map(lambda x : 0 * x + [0, 1, 0], vertices)))
+
+    color = np.array(color, dtype=np.float32)
+
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
         AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+        res = np.cross(AB, AC)
+        return res
 
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
+    vertexNormals = list(map(lambda x : x / np.linalg.norm(x), vertexNormals))
     
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
     normals = np.array(vertexNormals, dtype=np.float32)
     
     return vertices, indices, color, normals
@@ -92,9 +97,9 @@ class Mesh(object):
     Create object -> call setup -> call draw
     """
     def setup(self):
-        self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
