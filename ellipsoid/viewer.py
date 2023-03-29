@@ -115,8 +115,8 @@ def main():
     # place instances of our basic objects
 
     # model = Ellipsoid("./gouraud.vert", "./gouraud.frag").setup()
-    # model = Ellipsoid("./phong.vert", "./phong.frag").setup()
-    model = TexEllipsoid("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    model = Ellipsoid("./phong.vert", "./phong.frag").setup()
+    # model = TexEllipsoid("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop

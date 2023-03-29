@@ -14,7 +14,6 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     vertices, indices, color, triangles = [], [], [], []
     
     # Calculating vertex list
-    
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
     yMesh = (np.sin(xMesh) + np.cos(zMesh))
     yMax, yMin = yMesh.max(), yMesh.min()
@@ -24,6 +23,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     zList = zMesh.flatten()
         
     vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+    
     vertices = np.array(vertices, dtype=np.float32)
 
     # Calculating index list
@@ -39,7 +39,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
                  indices += [k2 + 1, k2 + 1]
             k1 += 1
             k2 += 1
-        if (i != s1 - 1):
+        if i != s1 - 1:
             k1 = k2
             k2 = k1 + s2 + 1
             for j in range(s2):
@@ -70,6 +70,12 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
         res = np.cross(AB, AC)
         return res
 
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+
     vertexNormals = np.zeros((len(vertices), 3))
     
     for i in triangles:
@@ -78,7 +84,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    vertexNormals = list(map(lambda x : x / np.linalg.norm(x), vertexNormals))
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
     normals = np.array(vertexNormals, dtype=np.float32)
     

@@ -13,23 +13,25 @@ import numpy as np
 def ellipsoid(rx, ry, rz, stk, sec):
     vertices, indices, color, triangles = [], [], [], []
     
-    for i in range(stk + 1):
-        phi = np.pi / 2 - np.pi * i / stk
-        for j in range(sec + 1):
-            theta = 2 * np.pi * j / sec
-            x = rx * np.cos(phi) * np.cos(theta)
-            y = ry * np.cos(phi) * np.sin(theta)
-            z = rz * np.sin(phi)
-            vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
+    # Calculating vertex list
+    stackMesh, sectorMesh = np.meshgrid(np.arange(0, stk + 1, 1), np.arange(0, sec + 1, 1))
 
+    phiMesh = np.pi / 2 - np.pi * stackMesh / stk
+    thetaMesh = 2 * np.pi * sectorMesh / sec 
+    
+    xMesh = rx * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = ry * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = rz * np.sin(phiMesh)
+    
+    xList = xMesh.flatten(order='F')
+    yList = yMesh.flatten(order='F')
+    zList = zMesh.flatten(order='F')
+    
+    vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+    
+    vertices = np.array(vertices, dtype=np.float32)
+
+    # Calculating index list
     for i in range(stk):
         k1 = i * (sec + 1)
         k2 = k1 + sec + 1
@@ -43,24 +45,45 @@ def ellipsoid(rx, ry, rz, stk, sec):
             k1 += 1
             k2 += 1
 
+    indices = np.array(indices, dtype=np.uint32)
+
+    # Calculating vertex color
+    for i in range(stk + 1):
+        for j in range(sec + 1):
+            if i % 2 == 0 and j % 2 == 0:
+                color += [1, 0, 0]
+            elif i % 2 == 0 and j % 2 != 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
+
+    color = np.array(color, dtype=np.float32)
+
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
         AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
         AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+        res = np.cross(AB, AC)
+        return res
+
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
 
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
+    
     normals = np.array(vertexNormals, dtype=np.float32)
     
     return vertices, indices, color, normals
