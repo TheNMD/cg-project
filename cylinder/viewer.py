@@ -115,8 +115,8 @@ def main():
     # place instances of our basic objects
 
     # model = Cylinder("./gouraud.vert", "./gouraud.frag").setup()
-    # model = Cylinder("./phong.vert", "./phong.frag").setup()
-    model = TexCylinder("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    model = Cylinder("./phong.vert", "./phong.frag").setup()
+    # model = TexCylinder("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop

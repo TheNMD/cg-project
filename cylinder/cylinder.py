@@ -85,7 +85,7 @@ def cylinder(r, h, sides):
 
 class Cylinder(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = cylinder(5, 2, 100) # radius, height, sides
+        self.vertices, self.indices, self.colors, self.normals = cylinder(2, 4, 100) # radius, height, sides
         
         self.vao = VAO()
 

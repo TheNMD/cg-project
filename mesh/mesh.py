@@ -16,7 +16,7 @@ def mesh(xFirst, xLast, zFirst, zLast):
     def randFunc(x, y):
         # if x > 8 or x < -8 or y > 8 or y < -8:
         #     return 0
-        res = np.sin(x) + np.cos(y)
+        res = np.abs(np.sin(x) + np.cos(y))
         return res
     
     xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
@@ -106,7 +106,6 @@ class Mesh(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
