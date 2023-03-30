@@ -5,7 +5,7 @@ sys.path.append("./textured")
 import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
-from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
+from itertools import cycle         # cyclic iterator to easily toggle polygon rendering modes
 from transform import Trackball
 from sphere import *
 from texsphere import *
