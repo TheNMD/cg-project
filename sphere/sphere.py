@@ -107,23 +107,29 @@ def sphere1(depth):
         if norm == 0: 
             return v
         return v / norm
-
+    
+    for i in range(len(vertices)):
+        vertices[i] = normalize(vertices[i])
+    
     for i in range(depth):
         indices_temp = []
         triangles_temp = []
-        for j in range(0, len(indices), 3):
-            A = vertices[indices[j]]
-            B = vertices[indices[j + 1]]
-            C = vertices[indices[j + 2]]
+        for j in triangles:
+            A = vertices[j[0]]
+            B = vertices[j[1]]
+            C = vertices[j[2]]
+            
             D = normalize([(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2])
             E = normalize([(B[0] + C[0]) / 2, (B[1] + C[1]) / 2, (B[2] + C[2]) / 2])
             F = normalize([(C[0] + A[0]) / 2, (C[1] + A[1]) / 2, (C[2] + A[2]) / 2])
-            vertices += [D, E, F]
-            index1 = len(vertices) - 3 # D
-            index2 = len(vertices) - 2 # E
-            index3 = len(vertices) - 1 # F
-            indices_temp += [indices[j], index1, index3] + [indices[j + 1], index2, index1] + [indices[j + 2], index3, index2] + [index1, index2, index3]
-            triangles_temp += [[indices[j], index1, index3]] + [[indices[j + 1], index2, index1]] + [[indices[j + 2], index3, index2]] + [[index1, index2, index3]]
+            
+            vertices += [D] +  [E] + [F]
+            
+            indexA, indexB, indexC = j[0], j[1], j[2]
+            indexD, indexE, indexF = len(vertices) - 3, len(vertices) - 2, len(vertices) - 1
+            
+            indices_temp += [indexA, indexD, indexF] + [indexB, indexE, indexD] + [indexC, indexF, indexE] + [indexD, indexE, indexF]
+            triangles_temp += [[indexA, indexD, indexF]] + [[indexB, indexE, indexD]] + [[indexC, indexF, indexE]] + [[indexD, indexE, indexF]]
         indices = indices_temp
         triangles = triangles_temp
 
@@ -132,7 +138,7 @@ def sphere1(depth):
     indices = np.array(indices, dtype=np.uint32)
 
     # Calculating vertex color
-    for i in indices:
+    for i in vertices:
         color += [1, 0, 0]
 
     color = np.array(color, dtype=np.float32)
