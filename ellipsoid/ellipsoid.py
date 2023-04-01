@@ -63,8 +63,8 @@ def ellipsoid(rx, ry, rz, stk, sec):
 
     # Calculating vertex normals
     def surfaceNormal(A, B, C):
-        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
-        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
+        AB = B - A
+        AC = C - A
         res = np.cross(AB, AC)
         return res
 
