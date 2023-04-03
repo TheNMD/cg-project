@@ -126,9 +126,9 @@ class Mesh(object):
         
         self.pathVertices, self.pathIndices, self.pathColors = SGD(self.vertices, 0.001, 1000)
         
-        self.vao = VAO()
-        self.shader = Shader(vert_shader, frag_shader)
-        self.uma = UManager(self.shader)
+        # self.vao = VAO()
+        # self.shader = Shader(vert_shader, frag_shader)
+        # self.uma = UManager(self.shader)
         
         self.vao1 = VAO()
         self.shader1 = Shader(vert_shader, frag_shader)
@@ -138,46 +138,46 @@ class Mesh(object):
     Create object -> call setup -> call draw
     """
     def setup(self):
-        self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_ebo(self.indices)
+        # self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        # self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        # self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        # self.vao.add_ebo(self.indices)
 
-        normalMat = np.identity(4, 'f')
-        # projection = T.ortho(-1, 1, -1, 1, -1, 1)
-        # modelview = np.identity(4, 'f')
+        # normalMat = np.identity(4, 'f')
+        # # projection = T.ortho(-1, 1, -1, 1, -1, 1)
+        # # modelview = np.identity(4, 'f')
 
-        # Light
-        I_light = np.array([
-            [0.9, 0.4, 0.6],  # diffuse
-            [0.9, 0.4, 0.6],  # specular
-            [0.9, 0.4, 0.6]  # ambient
-        ], dtype=np.float32)
-        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
+        # # Light
+        # I_light = np.array([
+        #     [0.9, 0.4, 0.6],  # diffuse
+        #     [0.9, 0.4, 0.6],  # specular
+        #     [0.9, 0.4, 0.6]  # ambient
+        # ], dtype=np.float32)
+        # light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
 
-        # Materials
-        K_materials = np.array([
-            [0.6, 0.4, 0.7],  # diffuse
-            [0.6, 0.4, 0.7],  # specular
-            [0.6, 0.4, 0.7]  # ambient
-        ], dtype=np.float32)
+        # # Materials
+        # K_materials = np.array([
+        #     [0.6, 0.4, 0.7],  # diffuse
+        #     [0.6, 0.4, 0.7],  # specular
+        #     [0.6, 0.4, 0.7]  # ambient
+        # ], dtype=np.float32)
 
-        shininess = 100.0
-        mode = 1
+        # shininess = 100.0
+        # mode = 1
 
-        GL.glUseProgram(self.shader.render_idx)
+        # GL.glUseProgram(self.shader.render_idx)
         
-        self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        # self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        # self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        # self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
+        # # self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        # # self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
 
-        self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
-        self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
+        # self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
+        # self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
         
-        self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
+        # self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
         
-        self.uma.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma.upload_uniform_scalar1i(mode, 'mode')
+        # self.uma.upload_uniform_scalar1f(shininess, 'shininess')
+        # self.uma.upload_uniform_scalar1i(mode, 'mode')
         
         ##################################################
         
@@ -224,11 +224,11 @@ class Mesh(object):
         return self
 
     def draw(self, projection, modelview, model):
-        self.vao.activate()
-        GL.glUseProgram(self.shader.render_idx)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
+        # self.vao.activate()
+        # GL.glUseProgram(self.shader.render_idx)
+        # self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        # self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        # GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         
         self.vao1.activate()
         GL.glUseProgram(self.shader1.render_idx)
