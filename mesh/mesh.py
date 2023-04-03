@@ -15,7 +15,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     
     # Calculating vertex list
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
-    yMesh = (np.sin(xMesh) + np.cos(zMesh))
+    yMesh = xMesh**2 + zMesh**2
     yMax, yMin = yMesh.max(), yMesh.min()
     
     xList = xMesh.flatten()
@@ -90,14 +90,49 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     
     return vertices, indices, color, normals
 
+def SGD(vertices, learningRate, iteration):
+    num = np.random.randint(0, len(vertices))
+    xRes, yRes, zRes = vertices[num][0], vertices[num][1], vertices[num][2]
+    pathVertices = [[vertices[num][0], vertices[num][1], vertices[num][2]]]
+    pathIndices = [num]
+    pathColors = [[0, 1, 0]]
+    for i in range(iteration):
+        num = np.random.randint(0, len(vertices))
+        x = vertices[num][0]
+        z = vertices[num][2]
+        
+        y = x**2 + z**2
+        
+        if y <= yRes:
+            yRes = y
+            xRes += (1 - 2 * learningRate) * x
+            zRes += (1 - 2 * learningRate) * z
+            
+            print(f"Iter {i}: x = {xRes}, y = {yRes}, z = {zRes}")
+            
+            pathVertices += [[vertices[num][0], vertices[num][1], vertices[num][2]]]
+            pathIndices += [num]
+            pathColors += [[0, 1, 0]]
+            
+    pathVertices = np.array(pathVertices, dtype=np.float32)
+    pathIndices = np.array(pathIndices, dtype=np.uint32)
+    pathColors = np.array(pathColors, dtype=np.float32)
+    
+    return pathVertices, pathIndices, pathColors
+
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10, 100) # xFirst, xLast, zFirst, zLast, step
+        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10, 200) # xFirst, xLast, zFirst, zLast, step
+        
+        self.pathVertices, self.pathIndices, self.pathColors = SGD(self.vertices, 0.001, 1000)
         
         self.vao = VAO()
-
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
+        
+        self.vao1 = VAO()
+        self.shader1 = Shader(vert_shader, frag_shader)
+        self.uma1 = UManager(self.shader1)
         
     """
     Create object -> call setup -> call draw
@@ -144,6 +179,48 @@ class Mesh(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1i(mode, 'mode')
         
+        ##################################################
+        
+        self.vao1.add_vbo(0, self.pathVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao1.add_vbo(1, self.pathColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao1.add_ebo(self.pathIndices)
+        
+        normalMat = np.identity(4, 'f')
+        # projection = T.ortho(-1, 1, -1, 1, -1, 1)
+        # modelview = np.identity(4, 'f')
+
+        # Light
+        I_light = np.array([
+            [0.9, 0.4, 0.6],  # diffuse
+            [0.9, 0.4, 0.6],  # specular
+            [0.9, 0.4, 0.6]  # ambient
+        ], dtype=np.float32)
+        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
+
+        # Materials
+        K_materials = np.array([
+            [0.6, 0.4, 0.7],  # diffuse
+            [0.6, 0.4, 0.7],  # specular
+            [0.6, 0.4, 0.7]  # ambient
+        ], dtype=np.float32)
+
+        shininess = 100.0
+        mode = 1
+
+        GL.glUseProgram(self.shader1.render_idx)
+        
+        self.uma1.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
+        # self.uma1.upload_uniform_matrix4fv(projection, 'projection', True)
+        # self.uma1.upload_uniform_matrix4fv(modelview, 'modelview', True)
+
+        self.uma1.upload_uniform_matrix3fv(I_light, 'I_light', False)
+        self.uma1.upload_uniform_vector3fv(light_pos, 'light_pos')
+        
+        self.uma1.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
+        
+        self.uma1.upload_uniform_scalar1f(shininess, 'shininess')
+        self.uma1.upload_uniform_scalar1i(mode, 'mode')
+        
         return self
 
     def draw(self, projection, modelview, model):
@@ -152,6 +229,12 @@ class Mesh(object):
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
+        
+        self.vao1.activate()
+        GL.glUseProgram(self.shader1.render_idx)
+        self.uma1.upload_uniform_matrix4fv(projection, 'projection', True)
+        self.uma1.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        GL.glDrawElements(GL.GL_LINE_STRIP, self.pathIndices.shape[0], GL.GL_UNSIGNED_INT, None)
 
     def key_handler(self, key):
         if key == glfw.KEY_1:

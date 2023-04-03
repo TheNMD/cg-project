@@ -114,8 +114,8 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    # model = Mesh("./gouraud.vert", "./gouraud.frag").setup()
-    model = Mesh("./phong.vert", "./phong.frag").setup()
+    model = Mesh("./gouraud.vert", "./gouraud.frag").setup()
+    # model = Mesh("./phong.vert", "./phong.frag").setup()
     # model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
