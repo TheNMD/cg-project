@@ -22,7 +22,7 @@ void main() {
   float specAngle = max(dot(R, V), 0.0);
   float specular = pow(specAngle, shininess);
   vec3 g = vec3(max(dot(L, N), 0.0), specular, 1.0);
-  vec3 rgb = 0.5*matrixCompMult(K_materials, I_light) * g + 0.5*colorInterp;
+  vec3 rgb = 0.5 * matrixCompMult(K_materials, I_light) * g +  0.5 * colorInterp; // 0.0 * colorInterp to make pure Phong
 
   fragColor = vec4(rgb, 1.0);
 }

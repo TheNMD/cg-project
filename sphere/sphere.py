@@ -10,7 +10,7 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere(r, stk, sec):   
+def sphere(center, r, stk, sec):   
     vertices, indices, color, triangles = [], [], [], []
     
     # Calculating vertex list
@@ -19,9 +19,9 @@ def sphere(r, stk, sec):
     phiMesh = np.pi / 2 - np.pi * stackMesh / stk
     thetaMesh = 2 * np.pi * sectorMesh / sec 
     
-    xMesh = r * np.cos(phiMesh) * np.cos(thetaMesh)
-    yMesh = r * np.cos(phiMesh) * np.sin(thetaMesh)
-    zMesh = r * np.sin(phiMesh)
+    xMesh = center[0] + r * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = center[1] + r * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = center[2] + r * np.sin(phiMesh)
     
     xList = xMesh.flatten(order='F')
     yList = yMesh.flatten(order='F')
@@ -166,9 +166,9 @@ def sphere1(depth):
 
 class Sphere(object):
     def __init__(self, vert_shader, frag_shader):
-        # self.vertices, self.indices, self.colors, self.normals = sphere(1, 100, 100) # radius, stacks, sectors - Sphere with stacks and sectors
+        self.vertices, self.indices, self.colors, self.normals = sphere([1.0, 0.0, 0.0], 1, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
         
-        self.vertices, self.indices, self.colors, self.normals = sphere1(6) # subdivision - Sphere from tetrahedron
+        # self.vertices, self.indices, self.colors, self.normals = sphere1(6) # subdivision - Sphere from tetrahedron
         
         self.vao = VAO()
 

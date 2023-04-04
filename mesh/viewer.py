@@ -10,7 +10,6 @@ from transform import Trackball
 from mesh import *
 from meshSGD import *
 from texmesh import *
-from test import *
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
