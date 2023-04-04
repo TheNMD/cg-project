@@ -98,6 +98,7 @@ def SGD(initPoint, learningRate, iteration, vertices):
     yMin = vertices[minIdx][1]
 
     xRes, yRes, zRes = initPoint[0], initPoint[1], initPoint[2]
+    # lossRes = 10000
     counter = 0
     pathVertices = [[initPoint[0], initPoint[1], initPoint[2]]]
     pathIndices = [counter]
@@ -108,19 +109,20 @@ def SGD(initPoint, learningRate, iteration, vertices):
         z = vertices[num][2]
         
         yCal = x**2 + z**2
-        yGiven = yCal + np.random.uniform(0, 1)
-        loss = 0.5(yCal - yGiven)**2
+        yGiven = yCal
+        # loss = 0.5(yCal - yGiven)**2
         # y = np.sin(x) + np.cos(z)
         
-        # if y < yRes:
-        #     yRes = y
+        if yCal < yRes:
+            yRes = yCal
+            # lossRes = loss
             
             xRes += x * 2 * learningRate
             zRes += z * 2 * learningRate
             # xRes += np.cos(x) * learningRate
             # zRes += -np.sin(z) * learningRate
             
-            print(f"Iter {i}: x = {xRes}, y = {yRes}, z = {zRes}")
+            print(f"Iter {i}: x = {xRes}, y = {yCal}, z = {zRes}")
             
             counter += 1
             
@@ -174,16 +176,8 @@ def sphere(center, r, stk, sec):
     indices = np.array(indices, dtype=np.uint32)
 
     # Calculating vertex color
-    for i in range(stk + 1):
-        for j in range(sec + 1):
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
+    for i in vertices:
+        color += [[0, 1, 0]]
     
     color = np.array(color, dtype=np.float32)
 
@@ -220,11 +214,11 @@ class MeshSGD(object):
         
         self.pathVertices, self.pathIndices, self.pathColors = SGD([1.5, 20.0, 1.5], 0.001, 20000, self.vertices) # initial point, learning rate, iteration
         
-        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals = sphere([0.0, 0.0, 0.0], 0.1, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals = sphere([1.5, 20.0, 1.5], 0.1, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
         
         self.vao = VAO()
         self.vao1 = VAO()
-        # self.vao2 = VAO()
+        self.vao2 = VAO()
         
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
@@ -245,6 +239,10 @@ class MeshSGD(object):
         self.vao1.add_ebo(self.pathIndices)
 
         # Sphere 1
+        self.vao2.add_vbo(0, self.sphereVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao2.add_vbo(1, self.sphereColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao2.add_vbo(2, self.sphereNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao2.add_ebo(self.sphereIndices)
 
         normalMat = np.identity(4, 'f')
         projection = T.ortho(-1, 1, -1, 1, -1, 1)
@@ -295,6 +293,9 @@ class MeshSGD(object):
         self.vao1.activate()
         GL.glDrawElements(GL.GL_LINE_STRIP, self.pathIndices.shape[0], GL.GL_UNSIGNED_INT, None)
 
+        self.vao2.activate()
+        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.sphereIndices.shape[0], GL.GL_UNSIGNED_INT, None)
+        
     def key_handler(self, key):
         if key == glfw.KEY_1:
             self.selected_texture = 1
