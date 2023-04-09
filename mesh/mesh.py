@@ -224,11 +224,11 @@ class Mesh(object):
         return self
 
     def draw(self, projection, modelview, model):
-        # self.vao.activate()
-        # GL.glUseProgram(self.shader.render_idx)
-        # self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        # self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        # GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
+        self.vao.activate()
+        GL.glUseProgram(self.shader.render_idx)
+        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         
         self.vao1.activate()
         GL.glUseProgram(self.shader1.render_idx)

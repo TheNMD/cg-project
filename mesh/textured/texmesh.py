@@ -10,38 +10,23 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def texmesh(xFirst, xLast, zFirst, zLast):
+def texmesh(xFirst, xLast, zFirst, zLast, step):
     vertices, indices, color, triangles, texcoord = [], [], [], [], []
     
-    def randFunc(x, y):
-        # if x > 8 or x < -8 or y > 8 or y < -8:
-        #     return 0
-        res = np.sin(x) + np.cos(y)
-        return res
+    # Calculating vertex list
+    xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
+    yMesh = xMesh**2 + zMesh**2
+    yMax, yMin = yMesh.max(), yMesh.min()
     
-    xList = np.arange(xFirst, xLast + (xLast - xFirst) / 100, (xLast - xFirst) / 100)
-    zList = np.arange(zFirst, zLast + (zLast - zFirst) / 100, (zLast - zFirst) / 100)
-    yMax, yMin = randFunc(xList[0], zList[0]), randFunc(xList[-1], zList[-1])
+    xList = xMesh.flatten()
+    yList = yMesh.flatten()
+    zList = zMesh.flatten()
+        
+    vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
     
-    for i in range(len(xList)):
-        for j in range(len(zList)):
-            x = xList[i]
-            z = zList[j]
-            y = randFunc(x, z)
-            vertices += [[x, y, z]]
-            if (y > yMax):
-                yMax = y
-            if (y < yMin):
-                yMin = y
-            if i % 2 == 0 and j % 2 == 0:
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                texcoord += [[1.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                texcoord += [[1.0 , 0.0]]
+    vertices = np.array(vertices, dtype=np.float32)
     
+    # Calculating index list
     s1 = len(xList) - 1
     s2 = len(zList) - 1
     for i in range(0, s1, 2):
@@ -65,42 +50,65 @@ def texmesh(xFirst, xLast, zFirst, zLast):
                 k1 -= 1
                 k2 -= 1
 
+    indices = np.array(indices, dtype=np.uint32)
+    
+    # Calculating vertex color
     if yMax != yMin:
-        for i in range(len(vertices)):
-            yColor = (vertices[i][1] + abs(yMin)) / (yMax + abs(yMin))
-            color += [yColor, 0, 1 - yColor]
-            # Red means y is higher
-            # Blue means y is lower
+        yColor = list(map(lambda x : (x + abs(yMin)) / (yMax + abs(yMin)), vertices[:, 1]))
+        color = list(map(lambda x : [x, 0, 1 - x], yColor))     
+        # Red means y is higher
+        # Blue means y is lower
     else:
-        for i in range(len(vertices)):
-            color += [0, 0, 1]
+        color = list((map(lambda x : 0 * x + [0, 1, 0], vertices)))
 
-    texcoord += [[0.5, 0.5]]
+    color = np.array(color, dtype=np.float32)
 
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
-        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
-        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+        AB = B - A
+        AC = C - A
+        res = np.cross(AB, AC)
+        return res
 
-    vertexNormals = np.empty((len(vertices), 3))
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+
+    vertexNormals = np.zeros((len(vertices), 3))
+    
+    # Calculating texture coordinates
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
-        vertexNormals[i[0]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[1]] = surfaceNormals / np.linalg.norm(surfaceNormals)
-        vertexNormals[i[2]] = surfaceNormals / np.linalg.norm(surfaceNormals)
+        vertexNormals[i[0]] += surfaceNormals
+        vertexNormals[i[1]] += surfaceNormals
+        vertexNormals[i[2]] += surfaceNormals
     
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
+    
     normals = np.array(vertexNormals, dtype=np.float32)
+    
+    for i in range(len(xList)):
+        for j in range(len(zList)):
+            if i % 2 == 0 and j % 2 == 0:
+                texcoord += [[0.0 , 1.0]]
+            elif i % 2 == 0 and j % 2 != 0:
+                texcoord += [[0.0 , 0.0]]
+            elif i % 2 != 0 and j % 2 == 0:
+                texcoord += [[1.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                texcoord += [[1.0 , 0.0]]
+
+    texcoord += [[0.5, 0.5]]
+    
     texcoord = np.array(texcoord, dtype=np.float32)
     
     return vertices, indices, color, normals, texcoord
 
 class TexMesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = texmesh(-10, 10, -10, 10) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals, self.texcoord = texmesh(-10, 10, -10, 10, 200) # xFirst, xLast, zFirst, zLast
         
         self.vao = VAO()
 
