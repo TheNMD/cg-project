@@ -11,7 +11,7 @@ import OpenGL.GL as GL
 import numpy as np
 
 def texmesh(xFirst, xLast, zFirst, zLast, step):
-    vertices, indices, color, triangles, texcoord = [], [], [], [], []
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
     # Calculating vertex list
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
@@ -25,10 +25,10 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
     vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
     
     vertices = np.array(vertices, dtype=np.float32)
-    
+
     # Calculating index list
-    s1 = len(xList) - 1
-    s2 = len(zList) - 1
+    s1 = int(np.sqrt(len(xList))) - 1
+    s2 = int(np.sqrt(len(zList))) - 1
     for i in range(0, s1, 2):
         k1 = i * (s2 + 1)
         k2 = k1 + s2 + 1
@@ -39,7 +39,7 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
                  indices += [k2 + 1, k2 + 1]
             k1 += 1
             k2 += 1
-        if (i != s1 - 1):
+        if i != s1 - 1:
             k1 = k2
             k2 = k1 + s2 + 1
             for j in range(s2):
@@ -51,7 +51,7 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
                 k2 -= 1
 
     indices = np.array(indices, dtype=np.uint32)
-    
+
     # Calculating vertex color
     if yMax != yMin:
         yColor = list(map(lambda x : (x + abs(yMin)) / (yMax + abs(yMin)), vertices[:, 1]))
@@ -78,7 +78,6 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
 
     vertexNormals = np.zeros((len(vertices), 3))
     
-    # Calculating texture coordinates
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
@@ -88,27 +87,26 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
     vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
     normals = np.array(vertexNormals, dtype=np.float32)
-    
-    for i in range(len(xList)):
-        for j in range(len(zList)):
-            if i % 2 == 0 and j % 2 == 0:
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                texcoord += [[1.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                texcoord += [[1.0 , 0.0]]
 
-    texcoord += [[0.5, 0.5]]
+    # Calculating texture coordinates
+    for i in range(int(np.sqrt(len(xList)))):
+        for j in range(int(np.sqrt(len(zList)))):
+            if i % 2 == 0 and j % 2 == 0:
+                texcoords += [[0.0 , 1.0]]
+            elif i % 2 == 0 and j % 2 != 0:
+                texcoords += [[0.0 , 0.0]]
+            elif i % 2 != 0 and j % 2 == 0:
+                texcoords += [[1.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                texcoords += [[1.0 , 0.0]]
     
-    texcoord = np.array(texcoord, dtype=np.float32)
+    texcoords = np.array(texcoords, dtype=np.float32)
     
-    return vertices, indices, color, normals, texcoord
+    return vertices, indices, color, normals, texcoords
 
 class TexMesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = texmesh(-10, 10, -10, 10, 200) # xFirst, xLast, zFirst, zLast
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = texmesh(-10, 10, -10, 10, 100) # xFirst, xLast, zFirst, zLast, step
         
         self.vao = VAO()
 
@@ -124,7 +122,7 @@ class TexMesh(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(3, self.texcoord, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
@@ -170,15 +168,9 @@ class TexMesh(object):
 
     def draw(self, projection, modelview, model):
         self.vao.activate()
-        
         GL.glUseProgram(self.shader.render_idx)
-        
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        
-        self.uma.upload_uniform_scalar1i(self.selected_texture, 'selected_texture')
-        self.uma.upload_uniform_scalar1i(1, 'face')
-        
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
 
     def key_handler(self, key):

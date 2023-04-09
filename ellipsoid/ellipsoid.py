@@ -10,7 +10,7 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def ellipsoid(rx, ry, rz, stk, sec):
+def ellipsoid(center, rx, ry, rz, stk, sec):
     vertices, indices, color, triangles = [], [], [], []
     
     # Calculating vertex list
@@ -19,9 +19,9 @@ def ellipsoid(rx, ry, rz, stk, sec):
     phiMesh = np.pi / 2 - np.pi * stackMesh / stk
     thetaMesh = 2 * np.pi * sectorMesh / sec 
     
-    xMesh = rx * np.cos(phiMesh) * np.cos(thetaMesh)
-    yMesh = ry * np.cos(phiMesh) * np.sin(thetaMesh)
-    zMesh = rz * np.sin(phiMesh)
+    xMesh = center[0] + rx * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = center[1] + ry * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = center[2] + rz * np.sin(phiMesh)
     
     xList = xMesh.flatten(order='F')
     yList = yMesh.flatten(order='F')
@@ -90,7 +90,7 @@ def ellipsoid(rx, ry, rz, stk, sec):
 
 class Ellipsoid(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = ellipsoid(1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals = ellipsoid([0.0, 0.0, 0.0], 1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
         
         self.vao = VAO()
 

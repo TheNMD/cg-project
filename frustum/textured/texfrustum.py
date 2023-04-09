@@ -11,23 +11,29 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import numpy as np
 
 def frustum(r, h1, h2, sides):
-    vertices, indices, color, triangles, texcoord = [], [], [], [], []
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
+    # Calculating vertex list and vertex color
     ratio = h2 / h1
+
+    sideList = np.arange(0, sides, 1)
     
-    for i in range(sides):
-        theta = 2 * np.pi * i / sides
-        x = r * np.cos(theta)
-        y = r * np.sin(theta)
-        x1 = x * ratio
-        y1 = y * ratio
-        vertices += [[x, y, 1], [x1, y1, 1 + h1 * ratio]]
+    thetaList = 2 * np.pi * sideList / sides
+    
+    xList = r * np.cos(thetaList)
+    zList = r * np.sin(thetaList)
+    x1List = xList * ratio
+    z1List = zList * ratio
+    
+    for i in range(len(thetaList)):
+        vertices += [[xList[i], 1, zList[i]], [x1List[i], 1 + h1 * ratio, z1List[i]]]
         color += [0, 0, 1] + [1, 0, 0]
         if i % 2 == 0:
-            texcoord += [[0.0, 1.0], [0.0, 0.0]]
+            texcoords += [[0.0, 1.0], [0.0, 0.0]]
         elif i % 2 != 0:
-            texcoord += [[1.0, 1.0], [1.0, 0.0]]
+            texcoords += [[1.0, 1.0], [1.0, 0.0]]
 
+    # Calculating index list 
     # Sides
     for i in range(sides):
         k1 = i * 2
@@ -40,9 +46,9 @@ def frustum(r, h1, h2, sides):
             triangles += [[k1, k1 + 1, 0]] + [[k1 + 1, 1, 0]]
 
     # Bottom
-    vertices += [[0, 0, 1]]
+    vertices += [[0, 1, 0]]
     color += [0, 0, 1]
-    texcoord += [[0.5, 0.0]]
+    texcoords += [[0.5, 0.0]]
     for i in range(sides):
         k1 = i * 2
         k2 = k1 + 2
@@ -57,9 +63,9 @@ def frustum(r, h1, h2, sides):
     indices += [0] + [1]
     
     # Top
-    vertices += [[0, 0, 1 + h1 * ratio]]
+    vertices += [[0,  1 + h1 * ratio, 0]]
     color += [1, 0, 0]
-    texcoord += [[0.5, 1.0]]
+    texcoords += [[0.5, 1.0]]
     for i in range(sides):
         k1 = i * 2 + 1
         k2 = k1 + 2
@@ -70,33 +76,44 @@ def frustum(r, h1, h2, sides):
             indices += [k1, len(vertices) - 1, 1]
             triangles += [[k1, len(vertices) - 1, 1]]
     
-    def surfaceNormal(A, B, C):
-        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
-        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+    vertices = np.array(vertices, dtype=np.float32)
     
+    indices = np.array(indices, dtype=np.uint32)
+    
+    color = np.array(color, dtype=np.float32)
+    
+    texcoords = np.array(texcoords, dtype=np.float32)
+    
+    # Calculating vertex normals
+    def surfaceNormal(A, B, C):
+        AB = B - A
+        AC = C - A
+        res = np.cross(AB, AC)
+        return res
+
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
     normals = np.array(vertexNormals, dtype=np.float32)
-    texcoord = np.array(texcoord, dtype=np.float32)
     
-    return vertices, indices, color, normals, texcoord
+    return vertices, indices, color, normals, texcoords
 
 class TexFrustum(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = frustum(1, 2, 1, 100) # radius, height 1, height 2, sides
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = frustum(1, 2, 1, 100) # radius, height 1, height 2, sides
         
         self.vao = VAO()
 
@@ -112,7 +129,7 @@ class TexFrustum(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(3, self.texcoord, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')

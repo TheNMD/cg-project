@@ -10,30 +10,28 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def ellipsoid(rx, ry, rz, stk, sec):   
-    vertices, indices, color, triangles, texcoord = [], [], [], [], []
+def ellipsoid(center, rx, ry, rz, stk, sec):   
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
-    for i in range(stk + 1):
-        phi = np.pi / 2 - np.pi * i / stk
-        for j in range(sec + 1):
-            theta = 2 * np.pi * j / sec
-            x = rx * np.cos(phi) * np.cos(theta)
-            y = ry * np.cos(phi) * np.sin(theta)
-            z = rz * np.sin(phi)
-            vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-                texcoord += [[1.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
-                texcoord += [[1.0 , 1.0]]
+    # Calculating vertex list
+    stackMesh, sectorMesh = np.meshgrid(np.arange(0, stk + 1, 1), np.arange(0, sec + 1, 1))
 
+    phiMesh = np.pi / 2 - np.pi * stackMesh / stk
+    thetaMesh = 2 * np.pi * sectorMesh / sec 
+    
+    xMesh = center[0] + rx * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = center[1] + ry * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = center[2] + rz * np.sin(phiMesh)
+    
+    xList = xMesh.flatten(order='F')
+    yList = yMesh.flatten(order='F')
+    zList = zMesh.flatten(order='F')
+    
+    vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+    
+    vertices = np.array(vertices, dtype=np.float32)
+
+    # Calculating index list
     for i in range(stk):
         k1 = i * (sec + 1)
         k2 = k1 + sec + 1
@@ -47,33 +45,66 @@ def ellipsoid(rx, ry, rz, stk, sec):
             k1 += 1
             k2 += 1
 
+    indices = np.array(indices, dtype=np.uint32)
+
+    # Calculating vertex color
+    for i in range(stk + 1):
+        for j in range(sec + 1):
+            if i % 2 == 0 and j % 2 == 0:
+                color += [1, 0, 0]
+            elif i % 2 == 0 and j % 2 != 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
+    
+    color = np.array(color, dtype=np.float32)
+
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
-        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
-        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+        AB = B - A
+        AC = C - A
+        res = np.cross(AB, AC)
+        return res
+
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
 
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
-
-    vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
-    normals = np.array(vertexNormals, dtype=np.float32)
-    texcoord = np.array(texcoord, dtype=np.float32)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
-    return vertices, indices, color, normals, texcoord
+    normals = np.array(vertexNormals, dtype=np.float32)
+    
+    # Calculating texture coordinates
+    for i in range(int(np.sqrt(len(xList)))):
+        for j in range(int(np.sqrt(len(zList)))):
+            if i % 2 == 0 and j % 2 == 0:
+                texcoords += [[0.0 , 1.0]]
+            elif i % 2 == 0 and j % 2 != 0:
+                texcoords += [[0.0 , 0.0]]
+            elif i % 2 != 0 and j % 2 == 0:
+                texcoords += [[1.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                texcoords += [[1.0 , 0.0]]
+    
+    texcoords = np.array(texcoords, dtype=np.float32)
+    
+    return vertices, indices, color, normals, texcoords
 
 class TexEllipsoid(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = ellipsoid(1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = ellipsoid([0.0, 0.0, 0.0], 1, 1.5, 2, 100, 100) # xRadius, yRadius, zRadius, stacks, sectors
         
         self.vao = VAO()
 
@@ -89,7 +120,7 @@ class TexEllipsoid(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(3, self.texcoord, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')

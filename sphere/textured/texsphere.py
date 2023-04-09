@@ -10,30 +10,28 @@ import glfw
 import OpenGL.GL as GL
 import numpy as np
 
-def sphere(r, stk, sec):   
-    vertices, indices, color, triangles, texcoord = [], [], [], [], []
+def sphere(center, r, stk, sec):   
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
-    for i in range(stk + 1):
-        phi = np.pi / 2 - np.pi * i / stk
-        for j in range(sec + 1):
-            theta = 2 * np.pi * j / sec
-            x = r * np.cos(phi) * np.cos(theta)
-            y = r * np.cos(phi) * np.sin(theta)
-            z = r * np.sin(phi)
-            vertices += [[x, y, z]]
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-                texcoord += [[0.0 , 0.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-                texcoord += [[1.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-                texcoord += [[0.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
-                texcoord += [[1.0 , 1.0]]
+    # Calculating vertex list
+    stackMesh, sectorMesh = np.meshgrid(np.arange(0, stk + 1, 1), np.arange(0, sec + 1, 1))
 
+    phiMesh = np.pi / 2 - np.pi * stackMesh / stk
+    thetaMesh = 2 * np.pi * sectorMesh / sec 
+    
+    xMesh = center[0] + r * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = center[1] + r * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = center[2] + r * np.sin(phiMesh)
+    
+    xList = xMesh.flatten(order='F')
+    yList = yMesh.flatten(order='F')
+    zList = zMesh.flatten(order='F')
+    
+    vertices = list(map(lambda x, y, z: [x, y, z], xList, yList, zList))
+    
+    vertices = np.array(vertices, dtype=np.float32)
+
+    # Calculating index list
     for i in range(stk):
         k1 = i * (sec + 1)
         k2 = k1 + sec + 1
@@ -47,33 +45,156 @@ def sphere(r, stk, sec):
             k1 += 1
             k2 += 1
 
+    indices = np.array(indices, dtype=np.uint32)
+
+    # Calculating vertex color
+    for i in range(stk + 1):
+        for j in range(sec + 1):
+            if i % 2 == 0 and j % 2 == 0:
+                color += [1, 0, 0]
+            elif i % 2 == 0 and j % 2 != 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 == 0:
+                color += [0, 0, 1]
+            elif i % 2 != 0 and j % 2 != 0:
+                color += [1, 0, 0]
+    
+    color = np.array(color, dtype=np.float32)
+
+    # Calculating vertex normals
     def surfaceNormal(A, B, C):
-        AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]
-        AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]]
-        n = np.cross(AB, AC)
-        return n
+        AB = B - A
+        AC = C - A
+        res = np.cross(AB, AC)
+        return res
+
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
 
     vertexNormals = np.zeros((len(vertices), 3))
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
         vertexNormals[i[1]] += surfaceNormals
         vertexNormals[i[2]] += surfaceNormals
     
-    for i in vertices:
-        i = i / np.linalg.norm(i)
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
+    
+    normals = np.array(vertexNormals, dtype=np.float32)
+    
+    # Calculating texture coordinates
+    for i in range(int(np.sqrt(len(xList)))):
+        for j in range(int(np.sqrt(len(zList)))):
+            if i % 2 == 0 and j % 2 == 0:
+                texcoords += [[0.0 , 1.0]]
+            elif i % 2 == 0 and j % 2 != 0:
+                texcoords += [[0.0 , 0.0]]
+            elif i % 2 != 0 and j % 2 == 0:
+                texcoords += [[1.0 , 1.0]]
+            elif i % 2 != 0 and j % 2 != 0:
+                texcoords += [[1.0 , 0.0]]
+    
+    texcoords = np.array(texcoords, dtype=np.float32)
+    
+    return vertices, indices, color, normals, texcoords
+
+def sphere1(depth):
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
+    
+    # Calculating vertex list
+    vertices = [[0.0, 1.0, 0.0],
+                [0.0, -0.5, 0.8165],
+                [0.7071, -0.5, -0.4082],
+                [-0.7071, -0.5, -0.4082]]
+
+    indices = [0, 1, 2] + [0, 2, 3] + [0, 3, 1] + [1, 3, 2]
+    
+    triangles += [[0, 1, 2]] + [[0, 2, 3]] + [[0, 3, 1]] + [[1, 3, 2]]
+
+    # Calculating index list
+    def normalize(v):
+        norm = np.linalg.norm(v)
+        if norm == 0: 
+            return v
+        return v / norm
+    
+    for i in range(len(vertices)):
+        vertices[i] = normalize(vertices[i])
+    
+    for i in range(depth):
+        indices_temp = []
+        triangles_temp = []
+        for j in triangles:
+            A = vertices[j[0]]
+            B = vertices[j[1]]
+            C = vertices[j[2]]
+            
+            D = normalize([(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2])
+            E = normalize([(B[0] + C[0]) / 2, (B[1] + C[1]) / 2, (B[2] + C[2]) / 2])
+            F = normalize([(C[0] + A[0]) / 2, (C[1] + A[1]) / 2, (C[2] + A[2]) / 2])
+            
+            vertices += [D] +  [E] + [F]
+            
+            indexA, indexB, indexC = j[0], j[1], j[2]
+            indexD, indexE, indexF = len(vertices) - 3, len(vertices) - 2, len(vertices) - 1
+            
+            indices_temp += [indexA, indexD, indexF] + [indexB, indexE, indexD] + [indexC, indexF, indexE] + [indexD, indexE, indexF]
+            triangles_temp += [[indexA, indexD, indexF]] + [[indexB, indexE, indexD]] + [[indexC, indexF, indexE]] + [[indexD, indexE, indexF]]
+        indices = indices_temp
+        triangles = triangles_temp
 
     vertices = np.array(vertices, dtype=np.float32)
-    indices = np.array(indices, dtype=np.uint32)
-    color = np.array(color, dtype=np.float32)
-    normals = np.array(vertexNormals, dtype=np.float32)
-    texcoord = np.array(texcoord, dtype=np.float32)
     
-    return vertices, indices, color, normals, texcoord
+    indices = np.array(indices, dtype=np.uint32)
+
+    # Calculating vertex color
+    for i in vertices:
+        color += [1, 0, 0]
+
+    color = np.array(color, dtype=np.float32)
+    
+    # Calculating vertex normals
+    def surfaceNormal(A, B, C):
+        AB = B - A
+        AC = C - A
+        res = np.cross(AB, AC)
+        return res
+    
+    vertexNormals = np.zeros((len(vertices), 3))
+    
+    for i in triangles:
+        surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
+        vertexNormals[i[0]] += surfaceNormals
+        vertexNormals[i[1]] += surfaceNormals
+        vertexNormals[i[2]] += surfaceNormals
+    
+    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
+    
+    normals = np.array(vertexNormals, dtype=np.float32)
+
+    # Calculating texture coordinates
+    # for i in range(int(np.sqrt(len(xList)))):
+    #     for j in range(int(np.sqrt(len(zList)))):
+    #         if i % 2 == 0 and j % 2 == 0:
+    #             texcoords += [[0.0 , 1.0]]
+    #         elif i % 2 == 0 and j % 2 != 0:
+    #             texcoords += [[0.0 , 0.0]]
+    #         elif i % 2 != 0 and j % 2 == 0:
+    #             texcoords += [[1.0 , 1.0]]
+    #         elif i % 2 != 0 and j % 2 != 0:
+    #             texcoords += [[1.0 , 0.0]]
+    
+    # texcoords = np.array(texcoords, dtype=np.float32)
+
+    return vertices, indices, color, normals, texcoords
 
 class TexSphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoord = sphere(1, 100, 100) # radius, stacks, sectors
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # radius, stacks, sectors
         
         self.vao = VAO()
 
@@ -89,7 +210,7 @@ class TexSphere(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(3, self.texcoord, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
