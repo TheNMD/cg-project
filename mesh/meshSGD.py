@@ -113,6 +113,7 @@ def SGD(initPoint, learningRate, iteration, vertices):
         # loss = 0.5(yCal - yGiven)**2
         # y = np.sin(x) + np.cos(z)
         
+
         if yCal < yRes:
             yRes = yCal
             # lossRes = loss
