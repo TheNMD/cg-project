@@ -105,17 +105,26 @@ def sphere(center, r, stk, sec):
 def sphere1(depth):
     vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
-    # Calculating vertex list
-    vertices = [[0.0, 1.0, 0.0],
-                [0.0, -0.5, 0.8165],
-                [0.7071, -0.5, -0.4082],
-                [-0.7071, -0.5, -0.4082]]
+    # Calculating vertex list and main tetrahedron texture coordinates
+    vertices = [
+                [0.0, 1.0, 0.0],             # O 0
+                [0.0, -1.0, np.sqrt(3)],     # A 1
+                [2.0, -1.0, -np.sqrt(3)],    # B 2
+                [-2.0, -1.0, -np.sqrt(3)],   # C 3
+               ]
 
     indices = [0, 1, 2] + [0, 2, 3] + [0, 3, 1] + [1, 3, 2]
     
     triangles += [[0, 1, 2]] + [[0, 2, 3]] + [[0, 3, 1]] + [[1, 3, 2]]
 
-    # Calculating index list
+    texcoords = [
+                 [0.5, 0.5],    # O 0
+                 [0.0, 1.0],    # A 1
+                 [0.5, 0.0],    # B 2
+                 [1.0, 1.0],    # C 3
+                ]
+    
+    # Calculating index list and sub-tetrahedrons texture coordinates
     def normalize(v):
         norm = np.linalg.norm(v)
         if norm == 0: 
@@ -133,9 +142,9 @@ def sphere1(depth):
             B = vertices[j[1]]
             C = vertices[j[2]]
             
-            D = normalize([(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2])
-            E = normalize([(B[0] + C[0]) / 2, (B[1] + C[1]) / 2, (B[2] + C[2]) / 2])
-            F = normalize([(C[0] + A[0]) / 2, (C[1] + A[1]) / 2, (C[2] + A[2]) / 2])
+            D = normalize((A + B) / 2)
+            E = normalize((B + C) / 2)
+            F = normalize((C + A) / 2)
             
             vertices += [D] +  [E] + [F]
             
@@ -144,13 +153,25 @@ def sphere1(depth):
             
             indices_temp += [indexA, indexD, indexF] + [indexB, indexE, indexD] + [indexC, indexF, indexE] + [indexD, indexE, indexF]
             triangles_temp += [[indexA, indexD, indexF]] + [[indexB, indexE, indexD]] + [[indexC, indexF, indexE]] + [[indexD, indexE, indexF]]
+            
+            ATex = texcoords[j[0]]
+            BTex = texcoords[j[1]]
+            CTex = texcoords[j[2]]
+            
+            DTex = [(ATex[0] + BTex[0]) / 2, (ATex[1] + BTex[1]) / 2]
+            ETex = [(BTex[0] + CTex[0]) / 2, (BTex[1] + CTex[1]) / 2]
+            FTex = [(CTex[0] + ATex[0]) / 2, (CTex[1] + ATex[1]) / 2]
+            
+            texcoords += [DTex] + [ETex] + [FTex]
         indices = indices_temp
         triangles = triangles_temp
 
     vertices = np.array(vertices, dtype=np.float32)
     
     indices = np.array(indices, dtype=np.uint32)
-
+    
+    texcoords = np.array(texcoords, dtype=np.float32)
+    
     # Calculating vertex color
     for i in vertices:
         color += [1, 0, 0]
@@ -175,26 +196,16 @@ def sphere1(depth):
     vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
     
     normals = np.array(vertexNormals, dtype=np.float32)
-
-    # Calculating texture coordinates
-    # for i in range(int(np.sqrt(len(xList)))):
-    #     for j in range(int(np.sqrt(len(zList)))):
-    #         if i % 2 == 0 and j % 2 == 0:
-    #             texcoords += [[0.0 , 1.0]]
-    #         elif i % 2 == 0 and j % 2 != 0:
-    #             texcoords += [[0.0 , 0.0]]
-    #         elif i % 2 != 0 and j % 2 == 0:
-    #             texcoords += [[1.0 , 1.0]]
-    #         elif i % 2 != 0 and j % 2 != 0:
-    #             texcoords += [[1.0 , 0.0]]
     
-    # texcoords = np.array(texcoords, dtype=np.float32)
+    texcoords = np.array(texcoords, dtype=np.float32)
 
     return vertices, indices, color, normals, texcoords
 
 class TexSphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # radius, stacks, sectors
+        # self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere1(6) # subdivision - Sphere from tetrahedron
         
         self.vao = VAO()
 

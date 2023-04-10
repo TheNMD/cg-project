@@ -56,11 +56,11 @@ class TexPyramid(object):
             ],dtype= np.float32)
 
         self.texcoord = np.array([
-                [0.5, 0.0],    # O 0
+                [0.5, 0.5],    # O 0
                 [0.0, 1.0],    # D 1
                 [1.0, 1.0],    # C 2
-                [0.0, 1.0],    # B 3
-                [1.0, 1.0]     # A 4
+                [1.0, 0.0],    # B 3
+                [0.0, 0.0]     # A 4
             ], dtype = np.float32)
         
         self.vao = VAO()
