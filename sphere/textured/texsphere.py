@@ -102,110 +102,9 @@ def sphere(center, r, stk, sec):
     
     return vertices, indices, color, normals, texcoords
 
-def sphere1(depth):
-    vertices, indices, color, triangles, texcoords = [], [], [], [], []
-    
-    # Calculating vertex list and main tetrahedron texture coordinates
-    vertices = [
-                [0.0, 1.0, 0.0],             # O 0
-                [0.0, -1.0, np.sqrt(3)],     # A 1
-                [2.0, -1.0, -np.sqrt(3)],    # B 2
-                [-2.0, -1.0, -np.sqrt(3)],   # C 3
-               ]
-
-    indices = [0, 1, 2] + [0, 2, 3] + [0, 3, 1] + [1, 3, 2]
-    
-    triangles += [[0, 1, 2]] + [[0, 2, 3]] + [[0, 3, 1]] + [[1, 3, 2]]
-
-    texcoords = [
-                 [0.5, 0.5],    # O 0
-                 [0.0, 1.0],    # A 1
-                 [0.5, 0.0],    # B 2
-                 [1.0, 1.0],    # C 3
-                ]
-    
-    # Calculating index list and sub-tetrahedrons texture coordinates
-    def normalize(v):
-        norm = np.linalg.norm(v)
-        if norm == 0: 
-            return v
-        return v / norm
-    
-    for i in range(len(vertices)):
-        vertices[i] = normalize(vertices[i])
-    
-    for i in range(depth):
-        indices_temp = []
-        triangles_temp = []
-        for j in triangles:
-            A = vertices[j[0]]
-            B = vertices[j[1]]
-            C = vertices[j[2]]
-            
-            D = normalize((A + B) / 2)
-            E = normalize((B + C) / 2)
-            F = normalize((C + A) / 2)
-            
-            vertices += [D] +  [E] + [F]
-            
-            indexA, indexB, indexC = j[0], j[1], j[2]
-            indexD, indexE, indexF = len(vertices) - 3, len(vertices) - 2, len(vertices) - 1
-            
-            indices_temp += [indexA, indexD, indexF] + [indexB, indexE, indexD] + [indexC, indexF, indexE] + [indexD, indexE, indexF]
-            triangles_temp += [[indexA, indexD, indexF]] + [[indexB, indexE, indexD]] + [[indexC, indexF, indexE]] + [[indexD, indexE, indexF]]
-            
-            ATex = texcoords[j[0]]
-            BTex = texcoords[j[1]]
-            CTex = texcoords[j[2]]
-            
-            DTex = [(ATex[0] + BTex[0]) / 2, (ATex[1] + BTex[1]) / 2]
-            ETex = [(BTex[0] + CTex[0]) / 2, (BTex[1] + CTex[1]) / 2]
-            FTex = [(CTex[0] + ATex[0]) / 2, (CTex[1] + ATex[1]) / 2]
-            
-            texcoords += [DTex] + [ETex] + [FTex]
-        indices = indices_temp
-        triangles = triangles_temp
-
-    vertices = np.array(vertices, dtype=np.float32)
-    
-    indices = np.array(indices, dtype=np.uint32)
-    
-    texcoords = np.array(texcoords, dtype=np.float32)
-    
-    # Calculating vertex color
-    for i in vertices:
-        color += [1, 0, 0]
-
-    color = np.array(color, dtype=np.float32)
-    
-    # Calculating vertex normals
-    def surfaceNormal(A, B, C):
-        AB = B - A
-        AC = C - A
-        res = np.cross(AB, AC)
-        return res
-    
-    vertexNormals = np.zeros((len(vertices), 3))
-    
-    for i in triangles:
-        surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
-        vertexNormals[i[0]] += surfaceNormals
-        vertexNormals[i[1]] += surfaceNormals
-        vertexNormals[i[2]] += surfaceNormals
-    
-    vertexNormals = list(map(lambda x : normalize(x), vertexNormals))
-    
-    normals = np.array(vertexNormals, dtype=np.float32)
-    
-    texcoords = np.array(texcoords, dtype=np.float32)
-
-    return vertices, indices, color, normals, texcoords
-
 class TexSphere(object):
     def __init__(self, vert_shader, frag_shader):
-        # self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
-        
-        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere1(6) # subdivision - Sphere from tetrahedron
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
         
         self.vao = VAO()
 
@@ -261,7 +160,7 @@ class TexSphere(object):
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
         self.uma.setup_texture("texture", "./textured/image/test.png")
-        # self.uma.setup_texture("texture", "./textured/image/test1.png")
+        # self.uma.setup_texture("texture", "./textured/image/texture.png")
         
         return self
 

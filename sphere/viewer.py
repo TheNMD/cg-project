@@ -8,7 +8,9 @@ import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle         # cyclic iterator to easily toggle polygon rendering modes
 from transform import Trackball
 from sphere import *
+from sphere1 import *
 from texsphere import *
+from texsphere1 import *
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
@@ -116,7 +118,9 @@ def main():
 
     # model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
     # model = Sphere("./phong.vert", "./phong.frag").setup()
-    model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    # model = Sphere1("./phong.vert", "./phong.frag").setup()
+    # model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    model = TexSphere1("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop

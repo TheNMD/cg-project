@@ -38,5 +38,5 @@ void main() {
   vec4 texture_color;
   texture_color = texture2D(texture, texcoord_interp);
 
-  fragColor = 0*color_factor*color_interp4 + phong_factor*fragColor + texture_factor*texture_color;
+  fragColor = 1*color_factor*color_interp4 + phong_factor*fragColor + texture_factor*texture_color;
 }
