@@ -119,8 +119,8 @@ def main():
     # model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
     # model = Sphere("./phong.vert", "./phong.frag").setup()
     # model = Sphere1("./phong.vert", "./phong.frag").setup()
-    # model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    model = TexSphere1("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    # model = TexSphere1("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     viewer.add(model)
 
     # start rendering loop

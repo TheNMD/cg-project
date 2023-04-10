@@ -87,16 +87,11 @@ def sphere(center, r, stk, sec):
     normals = np.array(vertexNormals, dtype=np.float32)
     
     # Calculating texture coordinates
-    for i in range(int(np.sqrt(len(xList)))):
-        for j in range(int(np.sqrt(len(zList)))):
-            if i % 2 == 0 and j % 2 == 0:
-                texcoords += [[0.0 , 1.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                texcoords += [[0.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                texcoords += [[1.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                texcoords += [[1.0 , 0.0]]
+    for i in range(stk + 1):
+        for j in range(sec + 1):
+            x = j / (int(np.sqrt(len(xList))) - 1)
+            y = i / (int(np.sqrt(len(zList))) - 1)
+            texcoords += [[x , y]]
     
     texcoords = np.array(texcoords, dtype=np.float32)
     
@@ -118,7 +113,7 @@ class TexSphere(object):
     """
     def setup(self):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
-        self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        # self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
@@ -159,8 +154,8 @@ class TexSphere(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
-        self.uma.setup_texture("texture", "./textured/image/test.png")
-        # self.uma.setup_texture("texture", "./textured/image/texture.png")
+        # self.uma.setup_texture("texture", "./textured/image/test.png")
+        self.uma.setup_texture("texture", "./textured/image/earth.jpg")
         
         return self
 

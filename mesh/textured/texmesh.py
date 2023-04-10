@@ -15,7 +15,7 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
     
     # Calculating vertex list
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
-    yMesh = xMesh**2 + zMesh**2
+    yMesh = np.sin(xMesh) + np.cos(zMesh)
     yMax, yMin = yMesh.max(), yMesh.min()
     
     xList = xMesh.flatten()
@@ -91,14 +91,9 @@ def texmesh(xFirst, xLast, zFirst, zLast, step):
     # Calculating texture coordinates
     for i in range(int(np.sqrt(len(xList)))):
         for j in range(int(np.sqrt(len(zList)))):
-            if i % 2 == 0 and j % 2 == 0:
-                texcoords += [[0.0 , 1.0]]
-            elif i % 2 == 0 and j % 2 != 0:
-                texcoords += [[0.0 , 0.0]]
-            elif i % 2 != 0 and j % 2 == 0:
-                texcoords += [[1.0 , 1.0]]
-            elif i % 2 != 0 and j % 2 != 0:
-                texcoords += [[1.0 , 0.0]]
+            x = i / (int(np.sqrt(len(xList))) - 1)
+            y = ((int(np.sqrt(len(zList))) - 1) - j) / (int(np.sqrt(len(zList))) - 1)
+            texcoords += [[x , y]]
     
     texcoords = np.array(texcoords, dtype=np.float32)
     
@@ -161,8 +156,8 @@ class TexMesh(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
-        self.uma.setup_texture("texture", "./textured/image/test.png")
-        # self.uma.setup_texture("texture", "./textured/image/test1.png")
+        # self.uma.setup_texture("texture", "./textured/image/test.png")
+        self.uma.setup_texture("texture", "./textured/image/earth.jpg")
         
         return self
 
