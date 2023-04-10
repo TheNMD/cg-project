@@ -99,7 +99,7 @@ def sphere(center, r, stk, sec):
 
 class TexSphere(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 1, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = sphere([0.0, 0.0, 0.0], 2, 100, 100) # center, radius, stacks, sectors - Sphere with stacks and sectors
         
         self.vao = VAO()
 
