@@ -153,8 +153,8 @@ class earth(object):
         
         return self
 
-    def draw(self, projection, view, rot_matrix, model):
-        modelview = view @ rot_matrix
+    def draw(self, projection, view, rotate_matrix, model):
+        modelview = view @ rotate_matrix
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
@@ -227,8 +227,8 @@ class moon(object):
         
         return self
 
-    def draw(self, projection, view, rot_matrix, model):
-        modelview = view @ rot_matrix
+    def draw(self, projection, view, rotate_matrix, model):
+        modelview = view @ rotate_matrix
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
@@ -300,8 +300,8 @@ class sun(object):
         
         return self
 
-    def draw(self, projection, view, rot_matrix, model):
-        modelview = view @ rot_matrix
+    def draw(self, projection, view, rotate_matrix, model):
+        modelview = view @ rotate_matrix
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
