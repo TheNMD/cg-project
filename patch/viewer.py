@@ -76,10 +76,10 @@ def main():
     """ create windows, add shaders & scene objects, then run rendering loop """
     viewer = Viewer()
 
-    model = Patch("./gouraud.vert", "./gouraud.frag",
-                  "./phong.vert", "./phong.frag").setup()
+    # model = Patch("./gouraud.vert", "./gouraud.frag",
+    #               "./phong.vert", "./phong.frag").setup()
 
-    model = PatchEx("./phongex.vert", "./phongex.frag").setup()
+    # model = PatchEx("./phongex.vert", "./phongex.frag").setup()
 
 
     model = TexturedPatch("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()

@@ -1,13 +1,10 @@
 import cv2
-import numpy as np
 
-
-def prepare_texture(size, in_files, out_file):
-    images = [cv2.resize(cv2.cvtColor(cv2.imread(file), cv2.COLOR_BGR2RGB), size) for file in in_files]
-    texture = np.concatenate(images, axis=1)
+def prepare_texture(in_files, out_file):
+    images = [cv2.imread(file) for file in in_files]
+    texture = cv2.hconcat(images)
     cv2.imwrite(out_file, texture)
 
-size = (500, 500)
-in_files_1 = ["./image/test.png"]
-out_file_1 = "./image/test1.png"
-prepare_texture(size, in_files_1, out_file_1)
+in_files = ["./image/earth.jpg", "./image/moon.jpg", "./image/sun.jpg"]
+out_files = "./image/solar_system.jpg"
+prepare_texture(in_files, out_files)

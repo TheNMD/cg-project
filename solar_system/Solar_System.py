@@ -11,7 +11,7 @@ import OpenGL.GL as GL
 import numpy as np
 
 def sphere(center, r, stk, sec):   
-    vertices, indices, color, triangles, texcoords = [], [], [], [], []
+    vertices, indices, color, triangles = [], [], [], []
     
     # Calculating vertex list
     stackMesh, sectorMesh = np.meshgrid(np.arange(0, stk + 1, 1), np.arange(0, sec + 1, 1))
@@ -78,33 +78,39 @@ def sphere(center, r, stk, sec):
     
     normals = np.array(vertexNormals, dtype=np.float32)
     
-    # Calculating texture coordinates
+    return vertices, indices, color, normals
+
+def texcoord(stk, sec, base):
+    texcoords = []
+    
     for i in range(stk + 1):
         for j in range(sec + 1):
-            x = j / (int(np.sqrt(len(xList))) - 1)
-            y = i / (int(np.sqrt(len(zList))) - 1)
+            x = base + j / (sec * 3)
+            y = i / stk
             texcoords += [[x , y]]
     
     texcoords = np.array(texcoords, dtype=np.float32)
     
-    return vertices, indices, color, normals, texcoords
+    return texcoords
 
-class MeshSGD(object):
+class solar_system(object):
     def __init__(self, vert_shader, frag_shader):
-        self.earthVertices, self.earthIndices, self.earthColors, self.earthNormals, self.earthTexcoords = sphere([0.0, 0.0, 10.0], 2.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.earthVertices, self.earthIndices, self.earthColors, self.earthNormals = sphere([30.0, 0.0, 0.0], 2.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.earthTexcoords = texcoord(50, 50, 0)
         
-        self.moonVertices, self.moonIndices, self.moonColors, self.moonNormals, self.moonTexcoords = sphere([0.0, 0.0, 13.0], 1.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.moonVertices, self.moonIndices, self.moonColors, self.moonNormals = sphere([35.0, 0.0, 0.0], 1.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.moonTexcoords = texcoord(50, 50, 1/3)
         
-        self.sunVertices, self.sunIndices, self.sunColors, self.sunNormals, self.sunTexcoords = sphere([0.0, 0.0, 0.0], 6.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.sunVertices, self.sunIndices, self.sunColors, self.sunNormals = sphere([0.0, 0.0, 0.0], 6.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.sunTexcoords = texcoord(50, 50, 2/3)
         
         self.vao = VAO()
-        self.uma1 = UManager(self.shader)
         self.vao1 = VAO()
-        self.uma2 = UManager(self.shader)
         self.vao2 = VAO()
-        self.uma3 = UManager(self.shader)
         
         self.shader = Shader(vert_shader, frag_shader)
+        self.uma = UManager(self.shader)
+
         
     """
     Create object -> call setup -> call draw
@@ -122,15 +128,17 @@ class MeshSGD(object):
         self.vao1.add_vbo(1, self.moonColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao1.add_vbo(2, self.moonNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao1.add_vbo(3, self.moonTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao1.add_ebo(self.sunIndices)
+        self.vao1.add_ebo(self.moonIndices)
 
         # Sun
         self.vao2.add_vbo(0, self.sunVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao2.add_vbo(1, self.sunColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao2.add_vbo(2, self.sunNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao2.add_vbo(3, self.sunTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao2.add_ebo(self.earthIndices)
+        self.vao2.add_ebo(self.sunIndices)
 
+        self.uma.setup_texture("texture", "./image/solar_system.jpg")
+        
         normalMat = np.identity(4, 'f')
         projection = T.ortho(-1, 1, -1, 1, -1, 1)
         modelview = np.identity(4, 'f')
@@ -152,10 +160,8 @@ class MeshSGD(object):
 
         shininess = 100.0
         mode = 1
-
-        GL.glUseProgram(self.shader.render_idx)
         
-        # Earth
+        GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
@@ -168,58 +174,23 @@ class MeshSGD(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1i(mode, 'mode')
         
-        self.uma.setup_texture("texture", "./image/earth.jpg")
-        
-        # Moon
-        self.uma1.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        self.uma1.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma1.upload_uniform_matrix4fv(modelview, 'modelview', True)
-
-        self.uma1.upload_uniform_matrix3fv(I_light, 'I_light', False)
-        self.uma1.upload_uniform_vector3fv(light_pos, 'light_pos')
-        
-        self.uma1.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
-        
-        self.uma1.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma1.upload_uniform_scalar1i(mode, 'mode')
-        
-        self.uma1.setup_texture("texture", "./image/earth.jpg")
-        
-        # Sun
-        self.uma2.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        self.uma2.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma2.upload_uniform_matrix4fv(modelview, 'modelview', True)
-
-        self.uma2.upload_uniform_matrix3fv(I_light, 'I_light', False)
-        self.uma2.upload_uniform_vector3fv(light_pos, 'light_pos')
-        
-        self.uma2.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
-        
-        self.uma2.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma2.upload_uniform_scalar1i(mode, 'mode')
-        
-        self.uma2.setup_texture("texture", "./image/earth.jpg")
-        
         return self
 
     def draw(self, projection, modelview, model):
         GL.glUseProgram(self.shader.render_idx)
-        # Earth
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+        
         self.vao.activate()
+        GL.glUseProgram(self.shader.render_idx)
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.earthIndices.shape[0], GL.GL_UNSIGNED_INT, None)
         
-        # Moon
-        self.uma1.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma1.upload_uniform_matrix4fv(modelview, 'modelview', True)
         self.vao1.activate()
+        GL.glUseProgram(self.shader.render_idx)
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.moonIndices.shape[0], GL.GL_UNSIGNED_INT, None)
 
-        # Sun
-        self.uma2.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma2.upload_uniform_matrix4fv(modelview, 'modelview', True)
         self.vao2.activate()
+        GL.glUseProgram(self.shader.render_idx)
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.sunIndices.shape[0], GL.GL_UNSIGNED_INT, None)
         
     def key_handler(self, key):

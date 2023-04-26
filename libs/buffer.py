@@ -86,7 +86,6 @@ class UManager(object):
         self.textures[binding_loc] = {}
         self.textures[binding_loc]["id"] = texture_idx
         self.textures[binding_loc]["name"] = sampler_name
-
         GL.glActiveTexture(GL.GL_TEXTURE0 + binding_loc) # activate texture GL.GL_TEXTURE0, GL.GL_TEXTURE1, ...
         GL.glBindTexture(GL.GL_TEXTURE_2D, texture_idx)
         GL.glUniform1i(GL.glGetUniformLocation(self.shader.render_idx, sampler_name), binding_loc)

@@ -113,10 +113,9 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
     
-    model = Solar_System("./phong_texture.vert", "./phong_texture.frag").setup()
-    
+    model = solar_system("./phong_texture.vert", "./phong_texture.frag").setup()
     viewer.add(model)
-
+    
     # start rendering loop
     viewer.run()
 
