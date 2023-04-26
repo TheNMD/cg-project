@@ -6,7 +6,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+from transform import *
 from Solar_System import *
 
 # ------------  Viewer class & windows management ------------------------------
@@ -56,6 +56,10 @@ class Viewer:
 
     def run(self):
         """ Main render loop for this OpenGL windows """
+        earth_orbit_itself = 0
+        earth_orbit_sun = 0
+        moon_orbit_earth = 0
+        sun_orbit_itself = 0
         while not glfw.window_should_close(self.win):
             # clear draw buffer
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -64,9 +68,34 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
+            earth_to_sun = translate(30.0, 0, 0)
+            sun_to_earth = translate(-30.0, 0, 0)
+            earth_rotate_itself = rotate(axis=(0, 0, 1), angle=earth_orbit_itself)
+            earth_rotate_itself = earth_to_sun @ earth_rotate_itself @ sun_to_earth
+            earth_rotate_sun = rotate(axis=(0, 0, 1), angle=earth_orbit_sun)
+            earth_rotate = earth_rotate_sun @ earth_rotate_itself
+            earth_orbit_itself += 1 * (360 / 24)
+            earth_orbit_sun += 1 * (360 / 8764)
+            
+            moon_to_sun = translate(30.0, 0, 0)
+            sun_to_moon = translate(-30.0, 0, 0)
+            moon_rotate_earth = rotate(axis=(0, 0, 1), angle=moon_orbit_earth)
+            moon_rotate_earth = moon_to_sun @ moon_rotate_earth @ sun_to_moon
+            moon_rotate = earth_rotate_sun @ moon_rotate_earth
+            moon_orbit_earth += 1 * (360 / (24 * 27.3))
+            
+            sun_rotate_itself = rotate(axis=(0, 0, 1), angle=sun_orbit_itself)
+            sun_orbit_itself += 0
+            
             # draw our scene objects
-            for drawable in self.drawables:
-                drawable.draw(projection, view, None)
+            for i in range(len(self.drawables)):
+                if i == 0:
+                    self.drawables[i].draw(projection, view, earth_rotate, None)
+                elif i == 1:
+                    self.drawables[i].draw(projection, view, moon_rotate, None)
+                else:
+                    self.drawables[i].draw(projection, view, sun_rotate_itself, None)
+
 
             # flush render commands, and swap draw buffers
             glfw.swap_buffers(self.win)
@@ -113,8 +142,12 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
     
-    model = solar_system("./phong_texture.vert", "./phong_texture.frag").setup()
-    viewer.add(model)
+    model_earth = earth("./phong_texture.vert", "./phong_texture.frag").setup()
+    viewer.add(model_earth)
+    model_moon = moon("./phong_texture.vert", "./phong_texture.frag").setup()
+    viewer.add(model_moon)
+    model_sun = sun("./phong_texture.vert", "./phong_texture.frag").setup()
+    viewer.add(model_sun)
     
     # start rendering loop
     viewer.run()
