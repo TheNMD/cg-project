@@ -119,10 +119,6 @@ def main():
     # model = Mesh("./phong.vert", "./phong.frag").setup()
     model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
     
-    # model = MeshSGD("./gouraud.vert", "./gouraud.frag").setup()
-    # model = MeshSGD("./phong.vert", "./phong.frag").setup()
-    # model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    
     
     viewer.add(model)
 

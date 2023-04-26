@@ -48,16 +48,8 @@ def sphere(center, r, stk, sec):
     indices = np.array(indices, dtype=np.uint32)
 
     # Calculating vertex color
-    for i in range(stk + 1):
-        for j in range(sec + 1):
-            if i % 2 == 0 and j % 2 == 0:
-                color += [1, 0, 0]
-            elif i % 2 == 0 and j % 2 != 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 == 0:
-                color += [0, 0, 1]
-            elif i % 2 != 0 and j % 2 != 0:
-                color += [1, 0, 0]
+    for i in vertices:
+        color += [1, 1, 1]
     
     color = np.array(color, dtype=np.float32)
 
@@ -154,7 +146,6 @@ class TexSphere(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
-        # self.uma.setup_texture("texture", "./textured/image/test.png")
         self.uma.setup_texture("texture", "./textured/image/earth.jpg")
         
         return self
