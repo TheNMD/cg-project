@@ -6,7 +6,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+from transform import *
 from SGD import *
 
 # ------------  Viewer class & windows management ------------------------------
@@ -56,6 +56,14 @@ class Viewer:
 
     def run(self):
         """ Main render loop for this OpenGL windows """
+        position = np.array([0, 0.3, 0])
+        
+        vector = np.zeros(3)
+        step = np.array([0.0, 0.0, 0.0])
+        
+        angle = 0
+        
+        counter = 0
         while not glfw.window_should_close(self.win):
             # clear draw buffer
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -64,9 +72,36 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
+            tmatrix = translate(vector[0], vector[1], vector[2])
+            
+            if counter < 10 and counter < 20:
+                step = np.array([0.0, 0.0, 0.01])
+                vector += step
+            elif counter >= 10 and counter < 20:
+                step = np.array([0.01, 0.0, 0.01])
+                vector += step
+            else:
+                step = np.array([0.01, 0.0, 0.01])
+                vector += np.array([0.0, 0.0, 0.0])
+            counter += 0.05
+            
+            raxis = np.cross(step, np.array([0, 1, 0]))
+            
+            tmatrix1 = translate(position[0], position[1], position[2])
+            tmatrix2 = translate(position[0], -position[1], position[2])
+            rmatrix = rotate(axis=(-raxis[0], -raxis[1], -raxis[2]), angle=angle)
+            rmatrix = tmatrix1 @ rmatrix @ tmatrix2
+            angle += 1
+            
+            matrix = tmatrix @ rmatrix
+            
+            
             # draw our scene objects
-            for drawable in self.drawables:
-                drawable.draw(projection, view, None)
+            for i in range(len(self.drawables)):
+                if i == 1:
+                    self.drawables[i].draw(projection, view, matrix, None)
+                else:
+                    self.drawables[i].draw(projection, view, None)
 
             # flush render commands, and swap draw buffers
             glfw.swap_buffers(self.win)
@@ -113,12 +148,10 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
     
-    # model = MeshSGD("./gouraud.vert", "./gouraud.frag").setup()
-    model = MeshSGD("./phong.vert", "./phong.frag").setup()
-    # model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    
-    
-    viewer.add(model)
+    model_mesh = Mesh("./phong.vert", "./phong.frag").setup()
+    viewer.add(model_mesh)
+    model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag").setup()
+    viewer.add(model_sphere)
 
     # start rendering loop
     viewer.run()

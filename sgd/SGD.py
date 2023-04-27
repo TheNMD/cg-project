@@ -15,8 +15,8 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     
     # Calculating vertex list
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
-    yMesh = xMesh**2 + zMesh**2
-    # yMesh = np.sin(xMesh) + np.cos(zMesh)
+    # yMesh = xMesh**2 + zMesh**2
+    yMesh = (np.sin(xMesh) + np.cos(zMesh))*0
     yMax, yMin = yMesh.max(), yMesh.min()
     
     xList = xMesh.flatten()
@@ -140,7 +140,7 @@ def SGD(initPoint, learningRate, iteration, vertices):
     return pathVertices, pathIndices, pathColors
 
 def sphere(center, r, stk, sec):   
-    vertices, indices, color, triangles = [], [], [], []
+    vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
     # Calculating vertex list
     stackMesh, sectorMesh = np.meshgrid(np.arange(0, stk + 1, 1), np.arange(0, sec + 1, 1))
@@ -207,20 +207,21 @@ def sphere(center, r, stk, sec):
     
     normals = np.array(vertexNormals, dtype=np.float32)
     
-    return vertices, indices, color, normals
+    for i in range(stk + 1):
+        for j in range(sec + 1):
+            x = j / sec
+            y = i / stk
+            texcoords += [[x , y]]
+            
+    texcoords = np.array(texcoords, dtype=np.float32)
+    
+    return vertices, indices, color, normals, texcoords
 
-class MeshSGD(object):
+class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-3, 3, -3, 3, 200) # xFirst, xLast, zFirst, zLast, step
-        
-        self.pathVertices, self.pathIndices, self.pathColors = SGD([1.5, 20.0, 1.5], 0.001, 20000, self.vertices) # initial point, learning rate, iteration
-        
-        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals = sphere([1.5, 20.0, 1.5], 0.1, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        self.vertices, self.indices, self.colors, self.normals = mesh(-5, 5, -5, 5, 100) # xFirst, xLast, zFirst, zLast, step
         
         self.vao = VAO()
-        self.vao1 = VAO()
-        self.vao2 = VAO()
-        
         self.shader = Shader(vert_shader, frag_shader)
         self.uma = UManager(self.shader)
         
@@ -233,17 +234,6 @@ class MeshSGD(object):
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
         self.vao.add_ebo(self.indices)
-
-        # SGD path
-        self.vao1.add_vbo(0, self.pathVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao1.add_vbo(1, self.pathColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao1.add_ebo(self.pathIndices)
-
-        # Sphere 1
-        self.vao2.add_vbo(0, self.sphereVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao2.add_vbo(1, self.sphereColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao2.add_vbo(2, self.sphereNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao2.add_ebo(self.sphereIndices)
 
         normalMat = np.identity(4, 'f')
         projection = T.ortho(-1, 1, -1, 1, -1, 1)
@@ -283,18 +273,85 @@ class MeshSGD(object):
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
+        self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        
-        self.vao.activate()
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         
-        self.vao1.activate()
-        GL.glDrawElements(GL.GL_LINE_STRIP, self.pathIndices.shape[0], GL.GL_UNSIGNED_INT, None)
+    def key_handler(self, key):
+        if key == glfw.KEY_1:
+            self.selected_texture = 1
+        if key == glfw.KEY_2:
+            self.selected_texture = 2
+            
+class Sphere(object):
+    def __init__(self, vert_shader, frag_shader):        
+        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals, self.sphereTexcoords = sphere([0.0, 0.3, 0.0], 0.3, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        
+        self.vao = VAO()
+        self.shader = Shader(vert_shader, frag_shader)
+        self.uma = UManager(self.shader)
+        
+    """
+    Create object -> call setup -> call draw
+    """
+    def setup(self):
+        # Sphere
+        self.vao.add_vbo(0, self.sphereVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(1, self.sphereColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(2, self.sphereNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(3, self.sphereTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_ebo(self.sphereIndices)
 
-        self.vao2.activate()
+        self.uma.setup_texture("texture", "./image/earth.jpg")
+        
+        normalMat = np.identity(4, 'f')
+        projection = T.ortho(-1, 1, -1, 1, -1, 1)
+        modelview = np.identity(4, 'f')
+
+        # Light
+        I_light = np.array([
+            [0.9, 0.4, 0.6],  # diffuse
+            [0.9, 0.4, 0.6],  # specular
+            [0.9, 0.4, 0.6]  # ambient
+        ], dtype=np.float32)
+        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
+
+        # Materials
+        K_materials = np.array([
+            [0.6, 0.4, 0.7],  # diffuse
+            [0.6, 0.4, 0.7],  # specular
+            [0.6, 0.4, 0.7]  # ambient
+        ], dtype=np.float32)
+
+        shininess = 100.0
+        mode = 1
+
+        GL.glUseProgram(self.shader.render_idx)
+        
+        self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
+        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
+
+        self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
+        self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
+        
+        self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
+        
+        self.uma.upload_uniform_scalar1f(shininess, 'shininess')
+        self.uma.upload_uniform_scalar1i(mode, 'mode')
+        
+        return self
+
+    def draw(self, projection, view, matrix, model):
+        modelview = view @ matrix
+        self.vao.activate()
+        GL.glUseProgram(self.shader.render_idx)
+        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
+        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
         GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.sphereIndices.shape[0], GL.GL_UNSIGNED_INT, None)
         
     def key_handler(self, key):
