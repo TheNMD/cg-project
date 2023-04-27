@@ -63,7 +63,7 @@ class Viewer:
         
         angle = 0
         
-        counter = 0
+        counter = 1
         while not glfw.window_should_close(self.win):
             # clear draw buffer
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -76,17 +76,13 @@ class Viewer:
             
             if counter < 10 and counter < 20:
                 step = np.array([0.0, 0.0, 0.01])
-                vector += step
+                vector += step / counter
             elif counter >= 10 and counter < 20:
                 step = np.array([0.01, 0.0, 0.01])
-                vector += step
-            else:
-                step = np.array([0.01, 0.0, 0.01])
-                vector += np.array([0.0, 0.0, 0.0])
+                vector += step / counter
             counter += 0.05
             
             raxis = np.cross(step, np.array([0, 1, 0]))
-            
             tmatrix1 = translate(position[0], position[1], position[2])
             tmatrix2 = translate(position[0], -position[1], position[2])
             rmatrix = rotate(axis=(-raxis[0], -raxis[1], -raxis[2]), angle=angle)
