@@ -77,11 +77,13 @@ class Viewer:
             earth_orbit_itself += 1 * (360 / 24)
             earth_orbit_sun += 1 * (360 / 8764)
             
-            moon_to_sun = translate(30.0, 0, 0)
-            sun_to_moon = translate(-30.0, 0, 0)
+            moon_to_sun = translate(35.0, 0, 0)
+            sun_to_moon = translate(-35.0, 0, 0)
+            moon_rotate_itself = rotate(axis=(0, 0, 1), angle=moon_orbit_earth)
+            moon_rotate_itself = moon_to_sun @ moon_rotate_itself @ sun_to_moon
             moon_rotate_earth = rotate(axis=(0, 0, 1), angle=moon_orbit_earth)
-            moon_rotate_earth = moon_to_sun @ moon_rotate_earth @ sun_to_moon
-            moon_rotate = earth_rotate_sun @ moon_rotate_earth
+            moon_rotate_earth = earth_to_sun @ moon_rotate_earth @ sun_to_earth
+            moon_rotate = earth_rotate_sun @ (moon_rotate_earth @ moon_rotate_itself)
             moon_orbit_earth += 1 * (360 / (24 * 27.3))
             
             sun_rotate_itself = rotate(axis=(0, 0, 1), angle=sun_orbit_itself)
