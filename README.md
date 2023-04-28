@@ -4,5 +4,4 @@ ltsach@hcmut.edu.vn
 2. pip install opencv-python
 3. pip install glfw
 4. pip install pandas
-5. pip install numpy
-6. pip install Pillow==9.2.0
+5. pip install Pillow==9.2.0
