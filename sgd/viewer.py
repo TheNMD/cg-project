@@ -71,7 +71,6 @@ class Viewer:
             win_size = glfw.get_window_size(self.win)
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
-
             tmatrix = translate(vector[step][0], vector[step][1], vector[step][2])
             
             # raxis = np.cross(vector[step], np.array([0, 1, 0]))
@@ -144,7 +143,7 @@ def main():
     
     model_mesh = Mesh("./phong.vert", "./phong.frag", -6, 6, -6, 6, 100).setup()
     viewer.add(model_mesh)
-    model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag", [2.0, 0.5], 0.2, 50, 50).setup() # center, radius, stacks, sectors
+    model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag", 0.2, 50, 50).setup() # radius, stacks, sectors
     viewer.add(model_sphere)
     model_path = Path("./phong.vert", "./phong.frag", [2.0, 0.5], 0.01, 500).setup() # initPoint (x, z), learningRate, iteration
     viewer.add(model_path)

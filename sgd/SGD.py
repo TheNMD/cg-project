@@ -161,7 +161,7 @@ class Mesh(object):
         if key == glfw.KEY_2:
             self.selected_texture = 2
 
-def sphere(center, r, stk, sec):   
+def sphere(r, stk, sec):   
     vertices, indices, color, triangles, texcoords = [], [], [], [], []
     
     # Calculating vertex list
@@ -170,9 +170,9 @@ def sphere(center, r, stk, sec):
     phiMesh = np.pi / 2 - np.pi * stackMesh / stk
     thetaMesh = 2 * np.pi * sectorMesh / sec 
     
-    xMesh = center[0] + r * np.cos(phiMesh) * np.cos(thetaMesh)
-    yMesh = center[1] + r * np.cos(phiMesh) * np.sin(thetaMesh)
-    zMesh = center[2] + r * np.sin(phiMesh)
+    xMesh = r * np.cos(phiMesh) * np.cos(thetaMesh)
+    yMesh = r * np.cos(phiMesh) * np.sin(thetaMesh)
+    zMesh = r * np.sin(phiMesh)
     
     xList = xMesh.flatten(order='F')
     yList = yMesh.flatten(order='F')
@@ -240,9 +240,8 @@ def sphere(center, r, stk, sec):
     return vertices, indices, color, normals, texcoords
             
 class Sphere(object):
-    def __init__(self, vert_shader, frag_shader, center, radius, stacks, sectors):        
-        self.initPoint = [center[0], np.sin(center[0]) + np.cos(center[1]) + radius, center[1]]
-        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals, self.sphereTexcoords = sphere(self.initPoint, radius, stacks, sectors)
+    def __init__(self, vert_shader, frag_shader, radius, stacks, sectors):        
+        self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals, self.sphereTexcoords = sphere(radius, stacks, sectors)
         
         self.vao = VAO()
         self.shader = Shader(vert_shader, frag_shader)
