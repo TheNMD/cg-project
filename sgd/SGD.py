@@ -240,7 +240,8 @@ def sphere(r, stk, sec):
     return vertices, indices, color, normals, texcoords
             
 class Sphere(object):
-    def __init__(self, vert_shader, frag_shader, radius, stacks, sectors):        
+    def __init__(self, vert_shader, frag_shader, radius, stacks, sectors):
+        self.radius = radius
         self.sphereVertices, self.sphereIndices, self.sphereColors, self.sphereNormals, self.sphereTexcoords = sphere(radius, stacks, sectors)
         
         self.vao = VAO()
@@ -315,7 +316,8 @@ class Sphere(object):
 def SGD(initPoint, learningRate, iteration):
     xInit = initPoint[0]
     zInit = initPoint[1]
-
+    yInit = np.sin(xInit) + np.cos(zInit) + 0.01
+    
     vertices = [[xInit, np.sin(xInit) + np.cos(zInit), zInit]]
     counter = 0
     indices = [counter]
@@ -326,8 +328,14 @@ def SGD(initPoint, learningRate, iteration):
         z = vertices[-1][2]
         xNew = x - np.cos(x) * learningRate
         zNew = z - (-np.sin(z) * learningRate)
+        yNew = np.sin(xNew) + np.cos(zNew) + 0.01
         
-        vertices += [[xNew, np.sin(xNew) + np.cos(zNew) + 0.01, zNew]]
+        if np.absolute(yNew - yInit) < 10e-5:
+            break
+        else:
+            yInit = yNew
+        
+        vertices += [[xNew, yNew, zNew]]
         counter += 1
         indices += [counter]
         color += [[1, 1, 0]]

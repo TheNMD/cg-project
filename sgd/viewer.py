@@ -56,14 +56,15 @@ class Viewer:
 
     def run(self):
         """ Main render loop for this OpenGL windows """
-        position = np.array([0, np.sin(0.0) + np.cos(0.0) + 0.3, 0])
         
-        vector = self.drawables[2].vertices
-        vector
+        vectorList = self.drawables[2].vertices.copy()
+        radius = self.drawables[1].radius
+        for vector in vectorList:
+            vector[1] += radius
+            vector = normalized(vector)
         step = 0
         
         angle = 0
-        
         
         while not glfw.window_should_close(self.win):
             # clear draw buffer
@@ -72,7 +73,8 @@ class Viewer:
             win_size = glfw.get_window_size(self.win)
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
-            tmatrix = translate(vector[step][0], vector[step][1], vector[step][2])
+            
+            tmatrix = translate(vectorList[step][0], vectorList[step][1], vectorList[step][2])
             
             # raxis = np.cross(vector[step], np.array([0, 1, 0]))
             # tmatrix1 = translate(position[0], position[1], position[2])
@@ -82,7 +84,7 @@ class Viewer:
             
             # matrix = tmatrix @ rmatrix
         
-            if step < len(vector) - 1:
+            if step < len(vectorList) - 1:
                 step += 1
             else:
                 step += 0
@@ -116,6 +118,9 @@ class Viewer:
             if key == glfw.KEY_W:
                 GL.glPolygonMode(GL.GL_FRONT_AND_BACK, next(self.fill_modes))
 
+            if key == glfw.KEY_R:
+                self.run()
+            
             for drawable in self.drawables:
                 if hasattr(drawable, 'key_handler'):
                     drawable.key_handler(key)
@@ -146,7 +151,7 @@ def main():
     viewer.add(model_mesh)
     model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag", 0.2, 50, 50).setup() # radius, stacks, sectors
     viewer.add(model_sphere)
-    model_path = Path("./phong.vert", "./phong.frag", [2.0, 0.5], 0.01, 500).setup() # initPoint (x, z), learningRate, iteration
+    model_path = Path("./phong.vert", "./phong.frag", [2.0, 0.5], 0.01, 1000).setup() # initPoint (x, z), learningRate, iteration
     viewer.add(model_path)
     
     # start rendering loop
