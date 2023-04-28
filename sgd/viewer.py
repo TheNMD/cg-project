@@ -56,14 +56,14 @@ class Viewer:
 
     def run(self):
         """ Main render loop for this OpenGL windows """
-        position = np.array([0, 0.3, 0])
+        position = np.array([0, np.sin(0.0) + np.cos(0.0) + 0.3, 0])
         
-        vector = np.zeros(3)
-        step = np.array([0.0, 0.0, 0.0])
+        vector = self.drawables[2].vertices
+        step = 0
         
         angle = 0
         
-        counter = 1
+        
         while not glfw.window_should_close(self.win):
             # clear draw buffer
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -72,30 +72,28 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
-            tmatrix = translate(vector[0], vector[1], vector[2])
+            tmatrix = translate(vector[step][0], vector[step][1], vector[step][2])
             
-            if counter < 10 and counter < 20:
-                step = np.array([0.0, 0.0, 0.01])
-                vector += step / counter
-            elif counter >= 10 and counter < 20:
-                step = np.array([0.01, 0.0, 0.01])
-                vector += step / counter
-            counter += 0.05
+            # raxis = np.cross(vector[step], np.array([0, 1, 0]))
+            # tmatrix1 = translate(position[0], position[1], position[2])
+            # tmatrix2 = translate(position[0], -position[1], position[2])
+            # rmatrix = rotate(axis=(-raxis[0], -raxis[1], -raxis[2]), angle=angle)
+            # rmatrix = tmatrix1 @ rmatrix @ tmatrix2
             
-            raxis = np.cross(step, np.array([0, 1, 0]))
-            tmatrix1 = translate(position[0], position[1], position[2])
-            tmatrix2 = translate(position[0], -position[1], position[2])
-            rmatrix = rotate(axis=(-raxis[0], -raxis[1], -raxis[2]), angle=angle)
-            rmatrix = tmatrix1 @ rmatrix @ tmatrix2
+            # matrix = tmatrix @ rmatrix
+        
+            if step < len(vector) - 1:
+                step += 1
+            else:
+                step += 0
             angle += 1
-            
-            matrix = tmatrix @ rmatrix
-            
             
             # draw our scene objects
             for i in range(len(self.drawables)):
-                if i == 1:
-                    self.drawables[i].draw(projection, view, matrix, None)
+                if i == 2:
+                    self.drawables[i].draw(projection, view, None)
+                elif i == 1:
+                    self.drawables[i].draw(projection, view, tmatrix, None)
                 else:
                     self.drawables[i].draw(projection, view, None)
 
@@ -144,11 +142,13 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
     
-    model_mesh = Mesh("./phong.vert", "./phong.frag").setup()
+    model_mesh = Mesh("./phong.vert", "./phong.frag", -6, 6, -6, 6, 100).setup()
     viewer.add(model_mesh)
-    model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag").setup()
+    model_sphere = Sphere("./phong_texture.vert", "./phong_texture.frag", [2.0, 0.5], 0.2, 50, 50).setup() # center, radius, stacks, sectors
     viewer.add(model_sphere)
-
+    model_path = Path("./phong.vert", "./phong.frag", [2.0, 0.5], 0.01, 500).setup() # initPoint (x, z), learningRate, iteration
+    viewer.add(model_path)
+    
     # start rendering loop
     viewer.run()
 
