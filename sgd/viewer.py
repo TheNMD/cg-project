@@ -59,6 +59,7 @@ class Viewer:
         position = np.array([0, np.sin(0.0) + np.cos(0.0) + 0.3, 0])
         
         vector = self.drawables[2].vertices
+        vector
         step = 0
         
         angle = 0
