@@ -6,9 +6,8 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+from transform import *
 from mesh import *
-from meshSGD import *
 from texmesh import *
 
 # ------------  Viewer class & windows management ------------------------------
@@ -66,9 +65,17 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
+            tmatrix1 = translate(25, 0, 0)
+            tmatrix2 = translate(50, 0, 0)
+            
             # draw our scene objects
-            for drawable in self.drawables:
-                drawable.draw(projection, view, None)
+            for i in range(len(self.drawables)):
+                if i == 0:
+                    self.drawables[i].draw(projection, view, None)
+                elif i == 1:
+                    self.drawables[i].draw(projection, view @ tmatrix1, None)
+                else:
+                    self.drawables[i].draw(projection, view @ tmatrix2, None)
 
             # flush render commands, and swap draw buffers
             glfw.swap_buffers(self.win)
@@ -115,12 +122,12 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    # model = Mesh("./gouraud.vert", "./gouraud.frag").setup()
-    # model = Mesh("./phong.vert", "./phong.frag").setup()
-    model = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    
-    
-    viewer.add(model)
+    model_gouraud = Mesh("./gouraud.vert", "./gouraud.frag").setup()
+    viewer.add(model_gouraud)
+    model_phong = Mesh("./phong.vert", "./phong.frag").setup()
+    viewer.add(model_phong)
+    model_tex = TexMesh("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    viewer.add(model_tex)
 
     # start rendering loop
     viewer.run()

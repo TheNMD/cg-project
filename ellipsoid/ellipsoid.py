@@ -146,7 +146,8 @@ class Ellipsoid(object):
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)

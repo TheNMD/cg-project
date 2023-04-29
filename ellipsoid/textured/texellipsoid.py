@@ -159,12 +159,12 @@ class TexEllipsoid(object):
         self.uma.upload_uniform_scalar1f(shininess, 'shininess')
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
-        self.uma.setup_texture("texture", "./textured/image/test.png")
-        # self.uma.setup_texture("texture", "./textured/image/test1.png")
+        self.uma.setup_texture("texture", "./textured/image/earth.jpg")
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)

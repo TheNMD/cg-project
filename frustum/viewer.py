@@ -6,7 +6,7 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle   # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+from transform import *
 from frustum import *
 from texfrustum import *
 
@@ -65,9 +65,17 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
+            tmatrix1 = translate(5, 0, 0)
+            tmatrix2 = translate(10, 0, 0)
+            
             # draw our scene objects
-            for drawable in self.drawables:
-                drawable.draw(projection, view, None)
+            for i in range(len(self.drawables)):
+                if i == 0:
+                    self.drawables[i].draw(projection, view, None)
+                elif i == 1:
+                    self.drawables[i].draw(projection, view @ tmatrix1, None)
+                else:
+                    self.drawables[i].draw(projection, view @ tmatrix2, None)
 
             # flush render commands, and swap draw buffers
             glfw.swap_buffers(self.win)
@@ -114,10 +122,12 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    # model = Frustum("./gouraud.vert", "./gouraud.frag").setup()
-    # model = Frustum("./phong.vert", "./phong.frag").setup()
-    model = TexFrustum("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    viewer.add(model)
+    model_gouraud = Frustum("./gouraud.vert", "./gouraud.frag").setup()
+    viewer.add(model_gouraud)
+    model_phong = Frustum("./phong.vert", "./phong.frag").setup()
+    viewer.add(model_phong)
+    model_tex = TexFrustum("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
+    viewer.add(model_tex)
 
     # start rendering loop
     viewer.run()

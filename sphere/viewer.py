@@ -6,11 +6,9 @@ import OpenGL.GL as GL              # standard Python OpenGL wrapper
 import glfw                         # lean windows system wrapper for OpenGL
 import numpy as np                  # all matrix manipulations & OpenGL args
 from itertools import cycle         # cyclic iterator to easily toggle polygon rendering modes
-from transform import Trackball
+from transform import *
 from sphere import *
-from sphere1 import *
 from texsphere import *
-from texsphere1 import *
 
 # ------------  Viewer class & windows management ------------------------------
 class Viewer:
@@ -67,9 +65,26 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
+            tmatrix1 = translate(5, 0, 0)
+            tmatrix2 = translate(10, 0, 0)
+            tmatrix3 = translate(0, 0, 5)
+            tmatrix4 = translate(5, 0, 5)
+            tmatrix5 = translate(10, 0, 5)
+            
             # draw our scene objects
-            for drawable in self.drawables:
-                drawable.draw(projection, view, None)
+            for i in range(len(self.drawables)):
+                if i == 0:
+                    self.drawables[i].draw(projection, view, None)
+                elif i == 1:
+                    self.drawables[i].draw(projection, view @ tmatrix1, None)
+                elif i == 2:
+                    self.drawables[i].draw(projection, view @ tmatrix2, None)
+                elif i == 3:
+                    self.drawables[i].draw(projection, view @ tmatrix3, None)
+                elif i == 4:
+                    self.drawables[i].draw(projection, view @ tmatrix4, None)
+                elif i == 5:
+                    self.drawables[i].draw(projection, view @ tmatrix5, None)
 
             # flush render commands, and swap draw buffers
             glfw.swap_buffers(self.win)
@@ -116,12 +131,19 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
 
-    # model = Sphere("./gouraud.vert", "./gouraud.frag").setup()
-    # model = Sphere("./phong.vert", "./phong.frag").setup()
-    # model = Sphere1("./phong.vert", "./phong.frag").setup()
-    model = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    # model = TexSphere1("./textured/phong_texture.vert", "./textured/phong_texture.frag").setup()
-    viewer.add(model)
+    model_gouraud = Sphere("./gouraud.vert", "./gouraud.frag", 0).setup()
+    viewer.add(model_gouraud)
+    model_phong = Sphere("./phong.vert", "./phong.frag", 0).setup()
+    viewer.add(model_phong)
+    model_tex = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag", 0).setup()
+    viewer.add(model_tex)
+    
+    model_gouraud1 = Sphere("./gouraud.vert", "./gouraud.frag", 1).setup()
+    viewer.add(model_gouraud1)
+    model_phong1 = Sphere("./phong.vert", "./phong.frag", 1).setup()
+    viewer.add(model_phong1)
+    model_tex1 = TexSphere("./textured/phong_texture.vert", "./textured/phong_texture.frag", 1).setup()
+    viewer.add(model_tex1)
 
     # start rendering loop
     viewer.run()

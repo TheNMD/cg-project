@@ -105,7 +105,7 @@ def frustum(r, h1, h2, sides):
 
 class Frustum(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = frustum(1, 2, 1, 4) # radius, height 1, height 2, sides
+        self.vertices, self.indices, self.colors, self.normals = frustum(1, 2, 1, 50) # radius, height 1, height 2, sides
         
         self.vao = VAO()
 
@@ -161,7 +161,8 @@ class Frustum(object):
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)

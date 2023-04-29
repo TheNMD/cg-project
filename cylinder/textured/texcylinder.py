@@ -109,7 +109,7 @@ def cylinder(r, h, sides):
 
 class TexCylinder(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoords = cylinder(1, 2, 100) # radius, height, sides
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = cylinder(2, 4, 100) # radius, height, sides
         
         self.vao = VAO()
 
@@ -165,11 +165,11 @@ class TexCylinder(object):
         self.uma.upload_uniform_scalar1f(phong_factor, 'phong_factor')
         
         self.uma.setup_texture("texture", "./textured/image/test.png")
-        # self.uma.setup_texture("texture", "./textured/image/test1.png")
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)

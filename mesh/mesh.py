@@ -15,7 +15,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     
     # Calculating vertex list
     xMesh, zMesh = np.meshgrid(np.arange(xFirst, xLast + (xLast - xFirst) / step, (xLast - xFirst) / step), np.arange(zFirst, zLast + (zLast - zFirst) / step, (zLast - zFirst) / step))
-    yMesh = xMesh**2 + zMesh**2
+    yMesh = np.sin(xMesh) + np.cos(zMesh)
     yMax, yMin = yMesh.max(), yMesh.min()
     
     xList = xMesh.flatten()
@@ -92,7 +92,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10, 200) # xFirst, xLast, zFirst, zLast, step
+        self.vertices, self.indices, self.colors, self.normals = mesh(-10, 10, -10, 10, 100) # xFirst, xLast, zFirst, zLast, step
         
         self.vao = VAO()
         self.shader = Shader(vert_shader, frag_shader)
@@ -145,7 +145,8 @@ class Mesh(object):
         
         return self
 
-    def draw(self, projection, modelview, model):
+    def draw(self, projection, view, model):
+        modelview = view
         self.vao.activate()
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
