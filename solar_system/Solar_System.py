@@ -93,10 +93,20 @@ def texcoord(stk, sec, base):
     
     return texcoords
 
-class earth(object):
-    def __init__(self, vert_shader, frag_shader):
-        self.earthVertices, self.earthIndices, self.earthColors, self.earthNormals = sphere([30.0, 0.0, 0.0], 2.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
-        self.earthTexcoords = texcoord(50, 50, 0)
+class Planet(object):
+    def __init__(self, vert_shader, frag_shader, center, radius, stacks, sectors, flag):
+        self.center = center
+        self.radius = radius
+        self.stacks = stacks
+        self.sectors = sectors
+        self.vertices, self.indices, self.colors, self.normals = sphere(center, radius, stacks, sectors) # center, radius, stacks, sectors - Sphere with stacks and sectors
+        
+        if flag == 0:
+            self.texcoords = texcoord(50, 50, 0)
+        elif flag == 1:
+            self.texcoords = texcoord(50, 50, 1/3)
+        else:
+            self.texcoords = texcoord(50, 50, 2/3)
         
         self.vao = VAO()
         self.shader = Shader(vert_shader, frag_shader)
@@ -107,12 +117,11 @@ class earth(object):
     Create object -> call setup -> call draw
     """
     def setup(self):
-        # Earth
-        self.vao.add_vbo(0, self.earthVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(1, self.earthColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(2, self.earthNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(3, self.earthTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_ebo(self.earthIndices)
+        self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_vbo(3, self.texcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
+        self.vao.add_ebo(self.indices)
 
         self.uma.setup_texture("texture", "./image/solar_system.jpg")
         
@@ -159,7 +168,7 @@ class earth(object):
         GL.glUseProgram(self.shader.render_idx)
         self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
         self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.earthIndices.shape[0], GL.GL_UNSIGNED_INT, None)
+        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         
     def key_handler(self, key):
         if key == glfw.KEY_1:
@@ -167,148 +176,6 @@ class earth(object):
         if key == glfw.KEY_2:
             self.selected_texture = 2
             
-class moon(object):
-    def __init__(self, vert_shader, frag_shader):
-        self.moonVertices, self.moonIndices, self.moonColors, self.moonNormals = sphere([35.0, 0.0, 0.0], 1.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
-        self.moonTexcoords = texcoord(50, 50, 1/3)
-        
-        self.vao = VAO()
-        self.shader = Shader(vert_shader, frag_shader)
-        self.uma = UManager(self.shader)
-
-        
-    """
-    Create object -> call setup -> call draw
-    """
-    def setup(self):
-        # Moon
-        self.vao.add_vbo(0, self.moonVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(1, self.moonColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(2, self.moonNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(3, self.moonTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_ebo(self.moonIndices)
-
-        self.uma.setup_texture("texture", "./image/solar_system.jpg")
-        
-        normalMat = np.identity(4, 'f')
-        projection = T.ortho(-1, 1, -1, 1, -1, 1)
-        modelview = np.identity(4, 'f')
-
-        # Light
-        I_light = np.array([
-            [0.9, 0.4, 0.6],  # diffuse
-            [0.9, 0.4, 0.6],  # specular
-            [0.9, 0.4, 0.6]  # ambient
-        ], dtype=np.float32)
-        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
-
-        # Materials
-        K_materials = np.array([
-            [0.6, 0.4, 0.7],  # diffuse
-            [0.6, 0.4, 0.7],  # specular
-            [0.6, 0.4, 0.7]  # ambient
-        ], dtype=np.float32)
-
-        shininess = 100.0
-        mode = 1
-        
-        GL.glUseProgram(self.shader.render_idx)
-        self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-
-        self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
-        self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
-        
-        self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
-        
-        self.uma.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma.upload_uniform_scalar1i(mode, 'mode')
-        
-        return self
-
-    def draw(self, projection, view, rotate_matrix, model):
-        modelview = view @ rotate_matrix
-        self.vao.activate()
-        GL.glUseProgram(self.shader.render_idx)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.moonIndices.shape[0], GL.GL_UNSIGNED_INT, None)
-        
-    def key_handler(self, key):
-        if key == glfw.KEY_1:
-            self.selected_texture = 1
-        if key == glfw.KEY_2:
-            self.selected_texture = 2
-            
-class sun(object):
-    def __init__(self, vert_shader, frag_shader):
-        self.sunVertices, self.sunIndices, self.sunColors, self.sunNormals = sphere([0.0, 0.0, 0.0], 6.0, 50, 50) # center, radius, stacks, sectors - Sphere with stacks and sectors
-        self.sunTexcoords = texcoord(50, 50, 2/3)
-        
-        self.vao = VAO()
-        self.shader = Shader(vert_shader, frag_shader)
-        self.uma = UManager(self.shader)
-
-        
-    """
-    Create object -> call setup -> call draw
-    """
-    def setup(self):
-        self.vao.add_vbo(0, self.sunVertices, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(1, self.sunColors, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(2, self.sunNormals, ncomponents=3, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_vbo(3, self.sunTexcoords, ncomponents=2, dtype=GL.GL_FLOAT, normalized=False, stride=0, offset=None)
-        self.vao.add_ebo(self.sunIndices)
-
-        self.uma.setup_texture("texture", "./image/solar_system.jpg")
-        
-        normalMat = np.identity(4, 'f')
-        projection = T.ortho(-1, 1, -1, 1, -1, 1)
-        modelview = np.identity(4, 'f')
-
-        # Light
-        I_light = np.array([
-            [0.9, 0.4, 0.6],  # diffuse
-            [0.9, 0.4, 0.6],  # specular
-            [0.9, 0.4, 0.6]  # ambient
-        ], dtype=np.float32)
-        light_pos = np.array([0, 0.5, 0.9], dtype=np.float32)
-
-        # Materials
-        K_materials = np.array([
-            [0.6, 0.4, 0.7],  # diffuse
-            [0.6, 0.4, 0.7],  # specular
-            [0.6, 0.4, 0.7]  # ambient
-        ], dtype=np.float32)
-
-        shininess = 100.0
-        mode = 1
-        
-        GL.glUseProgram(self.shader.render_idx)
-        self.uma.upload_uniform_matrix4fv(normalMat, 'normalMat', True)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-
-        self.uma.upload_uniform_matrix3fv(I_light, 'I_light', False)
-        self.uma.upload_uniform_vector3fv(light_pos, 'light_pos')
-        
-        self.uma.upload_uniform_matrix3fv(K_materials, 'K_materials', False)
-        
-        self.uma.upload_uniform_scalar1f(shininess, 'shininess')
-        self.uma.upload_uniform_scalar1i(mode, 'mode')
-        
-        return self
-
-    def draw(self, projection, view, rotate_matrix, model):
-        modelview = view @ rotate_matrix
-        self.vao.activate()
-        GL.glUseProgram(self.shader.render_idx)
-        self.uma.upload_uniform_matrix4fv(projection, 'projection', True)
-        self.uma.upload_uniform_matrix4fv(modelview, 'modelview', True)
-        GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.sunIndices.shape[0], GL.GL_UNSIGNED_INT, None)
-        
-    def key_handler(self, key):
         if key == glfw.KEY_1:
             self.selected_texture = 1
         if key == glfw.KEY_2:

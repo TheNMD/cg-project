@@ -79,6 +79,7 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
 
     vertexNormals = np.zeros((len(vertices), 3))
     
+    
     for i in triangles:
         surfaceNormals = surfaceNormal(vertices[i[0]], vertices[i[1]], vertices[i[2]])
         vertexNormals[i[0]] += surfaceNormals
@@ -89,11 +90,11 @@ def mesh(xFirst, xLast, zFirst, zLast, step):
     
     normals = np.array(vertexNormals, dtype=np.float32)
 
-    return vertices, indices, color, normals 
+    return vertices, indices, color, normals, triangles 
 
 class Mesh(object):
     def __init__(self, vert_shader, frag_shader, xFirst, xLast, zFirst, zLast, step):
-        self.vertices, self.indices, self.colors, self.normals = mesh(xFirst, xLast, zFirst, zLast, step)
+        self.vertices, self.indices, self.colors, self.normals, self.triangles = mesh(xFirst, xLast, zFirst, zLast, step)
         
         self.vao = VAO()
         self.shader = Shader(vert_shader, frag_shader)
@@ -330,7 +331,7 @@ def SGD(initPoint, learningRate, iteration):
         zNew = z - (-np.sin(z) * learningRate)
         yNew = np.sin(xNew) + np.cos(zNew) + 0.01
         
-        if np.absolute(yNew - yInit) < 10e-5:
+        if np.absolute(yNew - yInit) < 10e-4:
             break
         else:
             yInit = yNew

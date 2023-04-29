@@ -59,9 +59,8 @@ class Viewer:
         
         vectorList = self.drawables[2].vertices.copy()
         radius = self.drawables[1].radius
-        for vector in vectorList:
-            vector[1] += radius
-            vector = normalized(vector)
+        for i in range(len(vectorList)):
+            vectorList[i][1] += radius
         step = 0
         
         angle = 0
@@ -75,27 +74,29 @@ class Viewer:
             projection = self.trackball.projection_matrix(win_size)
             
             tmatrix = translate(vectorList[step][0], vectorList[step][1], vectorList[step][2])
+            if step == 0:
+                velocity = np.array([0, 0, 0])
+            else:
+                velocity = vectorList[step] - vectorList[step - 1]
+                
+            raxis = np.cross(np.array([0, 1, 0]), normalized(velocity))
+            rmatrix = rotate(axis=(raxis[0], raxis[1], raxis[2]), angle=angle)
             
-            # raxis = np.cross(vector[step], np.array([0, 1, 0]))
-            # tmatrix1 = translate(position[0], position[1], position[2])
-            # tmatrix2 = translate(position[0], -position[1], position[2])
-            # rmatrix = rotate(axis=(-raxis[0], -raxis[1], -raxis[2]), angle=angle)
-            # rmatrix = tmatrix1 @ rmatrix @ tmatrix2
-            
-            # matrix = tmatrix @ rmatrix
+            matrix = tmatrix @ rmatrix
         
             if step < len(vectorList) - 1:
                 step += 1
+                angle += 50 * np.sqrt(velocity[0]**2 + velocity[1]**2 + velocity[2]**2) / radius
             else:
                 step += 0
-            angle += 1
+                angle += 0
             
             # draw our scene objects
             for i in range(len(self.drawables)):
                 if i == 2:
                     self.drawables[i].draw(projection, view, None)
                 elif i == 1:
-                    self.drawables[i].draw(projection, view, tmatrix, None)
+                    self.drawables[i].draw(projection, view, matrix, None)
                 else:
                     self.drawables[i].draw(projection, view, None)
 

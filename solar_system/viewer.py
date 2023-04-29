@@ -120,6 +120,9 @@ class Viewer:
             if key == glfw.KEY_W:
                 GL.glPolygonMode(GL.GL_FRONT_AND_BACK, next(self.fill_modes))
 
+            if key == glfw.KEY_R:
+                self.run()
+            
             for drawable in self.drawables:
                 if hasattr(drawable, 'key_handler'):
                     drawable.key_handler(key)
@@ -146,11 +149,11 @@ def main():
     viewer = Viewer()
     # place instances of our basic objects
     
-    model_earth = earth("./phong_texture.vert", "./phong_texture.frag").setup()
+    model_earth = Planet("./phong_texture.vert", "./phong_texture.frag", [30.0, 0.0, 0.0], 2.0, 50, 50, flag=0).setup()
     viewer.add(model_earth)
-    model_moon = moon("./phong_texture.vert", "./phong_texture.frag").setup()
+    model_moon = Planet("./phong_texture.vert", "./phong_texture.frag", [35.0, 0.0, 0.0], 1.0, 50, 50, flag=1).setup()
     viewer.add(model_moon)
-    model_sun = sun("./phong_texture.vert", "./phong_texture.frag").setup()
+    model_sun = Planet("./phong_texture.vert", "./phong_texture.frag", [0.0, 0.0, 0.0], 6.0, 50, 50, flag=2).setup()
     viewer.add(model_sun)
     
     # start rendering loop
