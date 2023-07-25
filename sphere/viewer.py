@@ -65,11 +65,11 @@ class Viewer:
             view = self.trackball.view_matrix()
             projection = self.trackball.projection_matrix(win_size)
 
-            tmatrix1 = translate(5, 0, 0)
-            tmatrix2 = translate(10, 0, 0)
-            tmatrix3 = translate(0, 0, 5)
-            tmatrix4 = translate(5, 0, 5)
-            tmatrix5 = translate(10, 0, 5)
+            tmatrix1 = translate(2.5, 0, 0)
+            tmatrix2 = translate(5, 0, 0)
+            tmatrix3 = translate(0, 0, 2.5)
+            tmatrix4 = translate(2.5, 0, 2.5)
+            tmatrix5 = translate(5, 0, 2.5)
             
             # draw our scene objects
             for i in range(len(self.drawables)):

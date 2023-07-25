@@ -184,6 +184,7 @@ class Sphere(object):
         self.vao.add_vbo(0, self.vertices, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(1, self.colors, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
         self.vao.add_vbo(2, self.normals, ncomponents=3, dtype=GL.GL_FLOAT, stride=0, offset=None)
+        # No need EBO for GL.glDrawArray(GL.GL_TRIANGLES, 0, self.indices.shape[0])
         self.vao.add_ebo(self.indices)
 
         normalMat = np.identity(4, 'f')
@@ -236,6 +237,7 @@ class Sphere(object):
             GL.glDrawElements(GL.GL_TRIANGLE_STRIP, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
         else:
             GL.glDrawElements(GL.GL_TRIANGLES, self.indices.shape[0], GL.GL_UNSIGNED_INT, None)
+            # GL.glDrawArray(GL.GL_TRIANGLES, 0, self.indices.shape[0])
 
     def key_handler(self, key):
         if key == glfw.KEY_1:

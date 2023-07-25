@@ -113,7 +113,7 @@ def frustum(r, h1, h2, sides):
 
 class TexFrustum(object):
     def __init__(self, vert_shader, frag_shader):
-        self.vertices, self.indices, self.colors, self.normals, self.texcoords = frustum(1, 2, 1, 50) # radius, height 1, height 2, sides
+        self.vertices, self.indices, self.colors, self.normals, self.texcoords = frustum(1, 2, 1, 4) # radius, height 1, height 2, sides
         
         self.vao = VAO()
 
