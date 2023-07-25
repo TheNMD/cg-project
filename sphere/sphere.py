@@ -114,10 +114,10 @@ def sphere1(depth):
     for i in range(depth):
         indices_temp = []
         triangles_temp = []
-        for j in triangles:
-            A = vertices[j[0]]
-            B = vertices[j[1]]
-            C = vertices[j[2]]
+        for triangle in triangles:
+            A = vertices[triangle[0]]
+            B = vertices[triangle[1]]
+            C = vertices[triangle[2]]
             
             D = normalize([(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2])
             E = normalize([(B[0] + C[0]) / 2, (B[1] + C[1]) / 2, (B[2] + C[2]) / 2])
@@ -125,7 +125,7 @@ def sphere1(depth):
             
             vertices += [D] +  [E] + [F]
             
-            indexA, indexB, indexC = j[0], j[1], j[2]
+            indexA, indexB, indexC = triangle[0], triangle[1], triangle[2]
             indexD, indexE, indexF = len(vertices) - 3, len(vertices) - 2, len(vertices) - 1
             
             indices_temp += [indexA, indexD, indexF] + [indexB, indexE, indexD] + [indexC, indexF, indexE] + [indexD, indexE, indexF]
